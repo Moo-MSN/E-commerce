@@ -13,7 +13,7 @@ export const useProductStore = defineStore("product", {
       },
       {
         // เพิ่มจำนวน product
-        name: "Moo Test",
+        name: "moo test",
         imageURL: "https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp",
         quantity: 10,
         about: "testt",
