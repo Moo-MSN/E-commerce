@@ -1,8 +1,13 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
+
+const router = useRouter();
+
 
 const isLoggedIn = ref(false);
+const searchText = ref('')
+
 
 onMounted(() => {
   if (localStorage.getItem("isLoggedIn")) {
@@ -19,6 +24,18 @@ const logout = () => {
   isLoggedIn.value = false;
   localStorage.removeItem("isLoggedIn");
 };
+
+const handleSearch = (event) =>{ // เพิ่ม search เพื่อให้ค้นหาในช่องค้นหาแล้วไปยังหน้า search page
+  if (event.key === 'Enter'){
+    router.push({
+      name: 'search',
+      query: {
+        q: searchText.value
+      }
+    })
+  }
+}
+
 </script>
 
 <template>
@@ -29,7 +46,11 @@ const logout = () => {
       </div>
       <div class="flex gap-2">
         <div>
-          <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto" />
+          <input type="text" 
+          placeholder="Search" 
+          class="input input-bordered w-24 md:w-auto" 
+          v-model="searchText" 
+          @keyup="handleSearch"/>
         </div>
 
         <div class="flex-none">
