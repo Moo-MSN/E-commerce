@@ -1,6 +1,10 @@
 <script setup>
 import UserLayout from "@/layouts/UserLayout.vue";
 import close from "@/components/icon/close.vue";
+import { useCartStore } from "@/stores/user/cart";
+
+const cartStore = useCartStore()
+
 </script>
 
 <template>
@@ -9,7 +13,11 @@ import close from "@/components/icon/close.vue";
 
     <div class="flex">
       <div class="flex-auto w-64 bg-base-200 p-4">
-        <div class="flex" v-for="itme in [1, 2, 3, 4, 5]">
+        <div v-if="cartStore.items.length===0"> <!-- เพิ่มเข้ามาเมื่อกดไม่เอาของแล้ว ถ้าตะกร้าจะแสดงขึ้นมา -->
+          Cart is empty
+        </div>
+
+        <div class="flex" v-else v-for=" (item, index) in cartStore.items"> <!-- v-else เพื่อควบคุมการแสดง Cart is empty-->
           <div class="flex-1">
             <img class="w-full p-10" src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp" />
           </div>
@@ -18,16 +26,16 @@ import close from "@/components/icon/close.vue";
               <div>
                 <div class="relative grid grid-cols-2">
                   <div>
-                    <div><b>Flower</b></div>
-                    <div>Just Flower</div>
-                    <div>100 B</div>
+                    <div><b>{{ item.name }}</b></div>
+                    <div>{{ item.about }}</div>
+                    <div>{{item.price}}</div>
                   </div>
                   <div>
-                    <select class="select w-1/2">
+                    <select v-model="item.quantity" class="select w-1/2">
                       <option v-for="quantity in [1, 2, 3, 4, 5]">{{ quantity }}</option>
                     </select>
                   </div>
-                  <div class="absolute top-0 right-0">
+                  <div @click="cartStore.removeItemInCart(index)" class="absolute top-0 right-0">
                     <close></close>
                   </div>
                 </div>
