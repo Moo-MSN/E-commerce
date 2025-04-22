@@ -13,6 +13,18 @@ export const useCartStore = defineStore("cart", {
       },
     ],
   }),
+  getters: {
+    summaryQuantity (state) { // ใส่ใน UserLayout ในการปรับจำนวนในตะกร้าสินค้า
+      return state.items.reduce((acc,item) => acc + item.quantity,0)
+    },
+
+    summaryPrice (state) { // ใส่ในหน้า Cart page
+      return state.items.reduce((acc, item) => {
+        // acc คือค่าที่แล้ว, item คือจำนวน item
+        return acc + (item.price * item.quantity); // ทำการ return ค่าใหม่ ที่สะสมใน acc
+      }, 0); // 0 คือค่าเริ่มต้นใน summaprice
+    },
+  },
   actions: {
     addToCart(productDatd) {
       this.items.push(productDatd);
