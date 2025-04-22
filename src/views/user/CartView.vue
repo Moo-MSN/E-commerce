@@ -3,6 +3,7 @@ import UserLayout from "@/layouts/UserLayout.vue";
 import close from "@/components/icon/close.vue";
 import { useCartStore } from "@/stores/user/cart";
 
+
 const cartStore = useCartStore()
 
 </script>
@@ -52,7 +53,7 @@ const cartStore = useCartStore()
 
           <div class="flex justify-between py-2">
             <div>ราคาสินค้าทั้งหมด</div>
-            <div>100</div>
+            <div>{{ cartStore.summaryPrice }}</div>
           </div>
         
           <div class="flex justify-between py-2">
@@ -62,7 +63,7 @@ const cartStore = useCartStore()
         
           <div class="flex justify-between py-2">
             <div>ราคารวมทั้งหมด</div>
-            <div>100</div>
+            <div>{{cartStore.summaryPrice}}</div>
           </div>
         
 
