@@ -6,6 +6,11 @@ import { useCartStore } from "@/stores/user/cart";
 
 const cartStore = useCartStore()
 
+const changeQuantity = (event,index) => {
+  const newQuantity = parseInt(event.target.value) // สร้าง newQuantity เพื่อรับตัวแปลใหม่แล้วแปลงเป็นตัวเลขโดยใช้ parseInt
+  cartStore.updateQuantity(index, newQuantity)
+}
+
 </script>
 
 <template>
@@ -32,7 +37,7 @@ const cartStore = useCartStore()
                     <div>{{item.price}}</div>
                   </div>
                   <div>
-                    <select v-model="item.quantity" class="select w-1/2">
+                    <select class="select w-1/2" @change="changeQuantity($event, index)">
                       <option v-for="quantity in [1, 2, 3, 4, 5]">{{ quantity }}</option>
                     </select>
                   </div>
