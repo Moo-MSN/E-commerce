@@ -19,13 +19,13 @@ const changeQuantity = (event,index) => {
 
     <div class="flex">
       <div class="flex-auto w-64 bg-base-200 p-4">
-        <div v-if="cartStore.items.length===0"> <!-- เพิ่มเข้ามาเมื่อกดไม่เอาของแล้ว ถ้าตะกร้าจะแสดงขึ้นมา -->
+        <div v-if="cartStore.items.length===0"> <!-- เพิ่มเข้ามาเมื่อกดไม่เอาของแล้ว หน้าตะกร้าจะแสดงขึ้นมา -->
           Cart is empty
         </div>
 
         <div class="flex" v-else v-for=" (item, index) in cartStore.items"> <!-- v-else เพื่อควบคุมการแสดง Cart is empty-->
           <div class="flex-1">
-            <img class="w-full p-10" src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp" />
+            <img class="w-full p-10" :src="item.imageURL" /> <!--Edit src to :src = "item.imageURL"-->
           </div>
           <div class="flex-1">
             <div class="flex flex-col justify-between h-full">
@@ -37,7 +37,7 @@ const changeQuantity = (event,index) => {
                     <div>{{item.price}}</div>
                   </div>
                   <div>
-                    <select class="select w-1/2" @change="changeQuantity($event, index)">
+                    <select v-model="item.quantity" class="select w-1/2" @change="changeQuantity($event, index)">
                       <option v-for="quantity in [1, 2, 3, 4, 5]">{{ quantity }}</option>
                     </select>
                   </div>
