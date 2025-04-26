@@ -57,6 +57,7 @@ export const useCartStore = defineStore("cart", {
         paymentMethod: "Credit Card",
         createdData: new Date().toLocaleTimeString(),
         orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
+        product: this.items
       };
       localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
     },
