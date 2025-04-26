@@ -1,7 +1,7 @@
 <script setup>
 import { reactive } from "vue";
 import UserLayout from "@/layouts/UserLayout.vue";
-import { RouterLink } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 
 import { useCartStore } from "@/stores/user/cart";
 
@@ -24,6 +24,9 @@ const FormData = [
   },
 ];
 
+const cartStore = useCartStore();
+const router = useRouter(); // สร้าง router เพื่อนำทางไปยังหน้า success
+
 const userFormData = reactive({
   // สร้าง reactive เพื่อเก็บค่าของ form
   email: "",
@@ -33,10 +36,9 @@ const userFormData = reactive({
 });
 
 const payment = () => {
-  console.log(userFormData);
+  cartStore.checkout(userFormData);
+  router.push({ name: "success" });
 };
-
-const cartStore = useCartStore();
 </script>
 
 <template>
