@@ -26,7 +26,7 @@ export const useCartStore = defineStore("cart", {
       }
     },
     addToCart(productDatd) {
-      const findProductIndex = this.items.findIndex(item => {
+      const findProductIndex = this.items.findIndex((item) => {
         // หา index ว่ามี product เดิมอยู่ในตะกร้าหรือไม่
         return item.name === productDatd.name;
       });
@@ -48,6 +48,16 @@ export const useCartStore = defineStore("cart", {
     removeItemInCart(index) {
       this.items.splice(index, 1);
       localStorage.setItem("cart-data", JSON.stringify(this.items)); // เป็นการ save item เป็น string ไว้ใน localstorage
+    },
+    checkout(userData) {
+      const orderData = {
+        ...userData,
+        totalPrice: this.summaryPrice,
+        paymentMethod: "Credit Card",
+        createdData: new Date().toLocaleTimeString(),
+        orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
+      };
+      localStorage.setItem("orderData", JSON.stringify(orderData));
     },
   },
 });
