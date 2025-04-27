@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [],
-    checkout:{} //สร้าง {} เพื่อเก็บตัวแปลจาก getItem 
+    checkout: {}, //สร้าง {} เพื่อเก็บตัวแปลจาก getItem
   }),
   getters: {
     summaryQuantity(state) {
@@ -55,17 +55,18 @@ export const useCartStore = defineStore("cart", {
         ...userData, // เป็นการต่อข้อมูลใน object โดยการเพิ่มข้อมูลด้านล่าง
         totalPrice: this.summaryPrice,
         paymentMethod: "Credit Card",
-        createdData: new Date().toLocaleTimeString(),
+        createdData: (new Date()).toLocaleString(),
         orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
-        product: this.items
+        products: this.items,
       };
       localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
     },
-    loadCheckout (){ // เป็นการสร้างขึ้นมาเพิ่อรับ order-data จาก localstorage ถ้ามีข้อให้แสดง order แต่ถ้าไม่มีให้ไปยังหน้าอื่น
-      const orderData = localStorage.getItem("order-data")
+    loadCheckout() {
+      // เป็นการสร้างขึ้นมาเพิ่อรับ order-data จาก localstorage ถ้ามีข้อให้แสดง order แต่ถ้าไม่มีให้ไปยังหน้าอื่น
+      const orderData = localStorage.getItem("order-data");
       if (orderData) {
-        this.checkout = JSON.parse(orderData)
+        this.checkout = JSON.parse(orderData);
       }
-    }
+    },
   },
 });
