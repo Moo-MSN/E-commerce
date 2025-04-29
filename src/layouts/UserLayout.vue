@@ -21,9 +21,12 @@ const login = () => {
   localStorage.setItem("isLoggedIn", true);
 };
 
-const logout = () => {
+const logout = () => { //เมื่อ logout ให้คำสั่งด้านล่างทำอะไรบ้าง
   isLoggedIn.value = false;
   localStorage.removeItem("isLoggedIn");
+  localStorage.removeItem("cart-data");// ลบข้อมูลใน cart-data 
+  localStorage.removeItem("order-data"); // ลบข้อมูลใน order-data 
+  window.location.reload() // เมื่อ logout ทำการรีเฟรชอีกครั้ง
 };
 
 const handleSearch = (event) =>{ // เพิ่ม search เพื่อให้ค้นหาในช่องค้นหาแล้วไปยังหน้า search page
