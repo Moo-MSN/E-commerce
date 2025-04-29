@@ -50,19 +50,19 @@ export const useCartStore = defineStore("cart", {
       this.items.splice(index, 1);
       localStorage.setItem("cart-data", JSON.stringify(this.items)); // เป็นการ save item เป็น string ไว้ใน localstorage
     },
-    checkout(userData) {
+    placeorder(userData) {
       const orderData = {
         ...userData, // เป็นการต่อข้อมูลใน object โดยการเพิ่มข้อมูลด้านล่าง
         totalPrice: this.summaryPrice,
         paymentMethod: "Credit Card",
-        createdData: (new Date()).toLocaleString(),
+        createdData: new Date().toLocaleString(),
         orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
         products: this.items,
       };
       localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
     },
     loadCheckout() {
-      // เป็นการสร้างขึ้นมาเพิ่อรับ order-data จาก localstorage ถ้ามีข้อให้แสดง order แต่ถ้าไม่มีให้ไปยังหน้าอื่น
+      // เป็นการสร้างขึ้นมาเพิ่อรับ order-data จาก localstorage ถ้ามีข้อมูลให้แสดง order แต่ถ้าไม่มีให้ไปยังหน้าอื่น
       const orderData = localStorage.getItem("order-data");
       if (orderData) {
         this.checkout = JSON.parse(orderData);
