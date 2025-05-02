@@ -1,22 +1,12 @@
 <script setup>
 import AdminLayout from "@/layouts/AdminLayout.vue";
-import { ref } from "vue";
+import { useAdminProductStore } from "@/stores/admin/product";
+import { RouterLink } from "vue-router";
 
 import trash from "@/components/icon/trash.vue"; // import icon
 import edit from "@/components/icon/edit.vue"; // import icon
 
-const products = ref([
-  {
-    //เอาไว้เก็บ Array
-    name: "test",
-    image: "https://fastly.picsum.photos/id/531/200/300.jpg?hmac=zfPpbPSZ6_bXrCHp-HkvsObzLfkIb7pvmBoZhXrjKo4",
-    price: 200,
-    quantity: 20, // total quantity
-    remainQuantity: 11, // สร้างไปไว้ เพิ่มและลด จำนวนสินค้า
-    status: "open",
-    updatedAt: new Date().toISOString(), //จะได้ Date and Time ออกมา
-  },
-]);
+const adminProduct = useAdminProductStore();
 </script>
 
 <template>
@@ -24,7 +14,7 @@ const products = ref([
     <div class="flex items-center justify-between my-6">
       <div class="text-3xl font-semibold">Product</div>
       <div>
-        <button class="btn btn-neutral">Add New</button>
+        <RouterLink :to="{name:'admin-products-create'}" class="btn btn-neutral">Add New</RouterLink>
       </div>
     </div>
     <div>
@@ -45,7 +35,7 @@ const products = ref([
           </thead>
           <tbody>
             <!-- row 1 -->
-            <tr v-for="product in products">
+            <tr v-for="product in adminProduct.list ">
               <th>{{ product.name }}</th>
               <td>
                 <img :src="product.image" class="w-12" />
