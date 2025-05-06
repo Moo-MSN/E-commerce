@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 export const useAdminProductStore = defineStore("product", {
   state: () => ({
     list: [],
+    loaded: false
   }), 
   actions: {
     loadProduct() {
@@ -10,10 +11,14 @@ export const useAdminProductStore = defineStore("product", {
       const productList = localStorage.getItem("product-data");
       if (productList) {
         this.list = JSON.parse(productList);
+        this.loaded = true // ถ้ามีการ loaded ไปแล้วจะเป็น ture
       }
     },
     getProduct(index) {
       //ดึงข้อมูล product จาก list
+    if (!this.loaded) { // ถ้าไม่มีการ loaded 
+      this.loadProduct() // ให้ loadProduct ใหม่
+    }
       return this.list[index];
     },
     addProduct(productdata) {
