@@ -2,19 +2,8 @@ import { defineStore } from "pinia";
 
 export const useAdminProductStore = defineStore("product", {
   state: () => ({
-    list: [
-      {
-        //เอาไว้เก็บ Array
-        name: "test",
-        image: "https://fastly.picsum.photos/id/531/200/300.jpg?hmac=zfPpbPSZ6_bXrCHp-HkvsObzLfkIb7pvmBoZhXrjKo4",
-        price: 200,
-        quantity: 20, // total quantity
-        remainQuantity: 11, // สร้างไปไว้ เพิ่มและลด จำนวนสินค้า
-        status: "open",
-        updatedAt: new Date().toISOString(), //จะได้ Date and Time ออกมา
-      },
-    ],
-  }),
+    list: [],
+  }), 
   actions: {
     loadProduct() {
       //สำหรับดึงข้อมูล product ทั้งหมด จาก localstorage และ save ใส่ state list
@@ -51,7 +40,7 @@ export const useAdminProductStore = defineStore("product", {
       //สำหรับลบข้อมูล product จาก list และ save กลับ localstorage
       this.list.splice(index, 1);
       //save to localstorage
-      localStorage.setItem("product-data".JSON.stringify(this.list));
+      localStorage.setItem("product-data",JSON.stringify(this.list));
     },
   },
 });
