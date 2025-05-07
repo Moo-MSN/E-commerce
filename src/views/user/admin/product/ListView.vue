@@ -1,4 +1,5 @@
 <script setup>
+import {onMounted } from "vue";
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import { useAdminProductStore } from "@/stores/admin/product";
 import { RouterLink } from "vue-router";
@@ -6,7 +7,15 @@ import { RouterLink } from "vue-router";
 import trash from "@/components/icon/trash.vue"; // import icon
 import edit from "@/components/icon/edit.vue"; // import icon
 
-const adminProduct = useAdminProductStore();
+const adminProductStore = useAdminProductStore();
+
+onMounted(() => {
+  adminProductStore.loadProduct();
+});
+
+const removeProduct = (index) => {
+  adminProductStore.removeProduct(index);
+};
 </script>
 
 <template>
@@ -14,7 +23,7 @@ const adminProduct = useAdminProductStore();
     <div class="flex items-center justify-between my-6">
       <div class="text-3xl font-semibold">Product</div>
       <div>
-        <RouterLink :to="{name:'admin-products-create'}" class="btn btn-neutral">Add New</RouterLink>
+        <RouterLink :to="{ name: 'admin-products-create' }" class="btn btn-neutral">Add New</RouterLink>
       </div>
     </div>
     <div>
@@ -35,7 +44,7 @@ const adminProduct = useAdminProductStore();
           </thead>
           <tbody>
             <!-- row 1 -->
-            <tr v-for="product in adminProduct.list ">
+            <tr v-for="(product, index) in adminProductStore.list">
               <th>{{ product.name }}</th>
               <td>
                 <img :src="product.image" class="w-12" />
@@ -43,17 +52,20 @@ const adminProduct = useAdminProductStore();
               <td>{{ product.price }}</td>
               <td>{{ product.quantity }}</td>
               <td>
-                <div class="badge badge-success gap-2">
+                <div class="badge gap-2" 
+                
+                :class="product.status === 'open' ?'badge-success': 'badge-error' "> 
+                <!--if else 1 บรรทัด คือ ถ้า open ให้เป็น badge-success ถ้าไม่ใช่ให้เป็น badge-error-->
                   {{ product.status }}
-                </div>
-              </td>
+                </div> 
+              </td> 
               <td>{{ product.updatedAt }}</td>
               <td>
                 <div class="flex gap-2">
-                  <div class="btn btn-ghost">
+                  <RouterLink :to="{name:'admin-products-update',params:{id:index}}" class="btn btn-ghost">
                     <edit></edit>
-                  </div>
-                  <div class="btn btn-ghost">
+                  </RouterLink>
+                  <div class="btn btn-ghost" @click="removeProduct(index)"> <!--เมื่อ click จะทำการลบข้อมูลที่ตำแหน่ง index  -->
                     <trash></trash>
                   </div>
                 </div>
