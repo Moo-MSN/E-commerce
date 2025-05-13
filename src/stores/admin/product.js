@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-export const useAdminProductStore = defineStore("product", {
+export const useAdminProductStore = defineStore("product-data", {
   state: () => ({
     list: [],
     loaded: false,
@@ -30,7 +30,7 @@ export const useAdminProductStore = defineStore("product", {
       //save to localstorage
       localStorage.setItem("product-data", JSON.stringify(this.list));
     },
-    updateproduct(index, productdata) {
+    updateProduct(index, productdata) {
       //สำหรับ update ข้อมูล product เข้า list และ save ลง localstorage
       this.list[index].name = productdata.name;
       this.list[index].imageUrl = productdata.imageUrl;
