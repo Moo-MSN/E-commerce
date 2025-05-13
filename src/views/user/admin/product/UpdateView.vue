@@ -64,7 +64,7 @@ const formData = [
 
 const updateproduct = () => {
   if (mode.value === "EDIT") { // ถ้า mode.value เป็น EDIT ให้ทำการ update
-    adminProductStore.updateproduct(productIndex.value, productData);
+    adminProductStore.updateProduct(productIndex.value, productData);
   } else {// แต่ถ้าไม่ใช่ EDIT ให้เพิ่ม product ใหม่
     adminProductStore.addProduct(productData);
   }
