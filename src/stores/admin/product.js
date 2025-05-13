@@ -3,22 +3,23 @@ import { defineStore } from "pinia";
 export const useAdminProductStore = defineStore("product", {
   state: () => ({
     list: [],
-    loaded: false
-  }), 
+    loaded: false,
+  }),
   actions: {
     loadProduct() {
       //สำหรับดึงข้อมูล product ทั้งหมด จาก localstorage และ save ใส่ state list
       const productList = localStorage.getItem("product-data");
       if (productList) {
         this.list = JSON.parse(productList);
-        this.loaded = true // ถ้ามีการ loaded ไปแล้วจะเป็น ture
+        this.loaded = true; // ถ้ามีการ loaded ไปแล้วจะเป็น ture
       }
     },
     getProduct(index) {
       //ดึงข้อมูล product จาก list
-    if (!this.loaded) { // ถ้าไม่มีการ loaded 
-      this.loadProduct() // ให้ loadProduct ใหม่
-    }
+      if (!this.loaded) {
+        // ถ้าไม่มีการ loaded
+        this.loadProduct(); // ให้ loadProduct ใหม่
+      }
       return this.list[index];
     },
     addProduct(productdata) {
@@ -31,7 +32,7 @@ export const useAdminProductStore = defineStore("product", {
     },
     updateproduct(index, productdata) {
       //สำหรับ update ข้อมูล product เข้า list และ save ลง localstorage
-      this.list[index].name = prUrloductdata.name;
+      this.list[index].name = productdata.name;
       this.list[index].imageUrl = productdata.imageUrl;
       this.list[index].price = productdata.price;
       this.list[index].quantity = productdata.quantity;
@@ -45,7 +46,7 @@ export const useAdminProductStore = defineStore("product", {
       //สำหรับลบข้อมูล product จาก list และ save กลับ localstorage
       this.list.splice(index, 1);
       //save to localstorage
-      localStorage.setItem("product-data",JSON.stringify(this.list));
+      localStorage.setItem("product-data", JSON.stringify(this.list));
     },
   },
 });
