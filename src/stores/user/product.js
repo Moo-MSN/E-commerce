@@ -2,29 +2,21 @@ import { defineStore } from "pinia";
 
 export const useProductStore = defineStore("product", {
   state: () => ({
-    list: [
-      {
-        name: "test",
-        imageURL: "https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp",
-        quantity: 10,
-        about: "testt",
-        atatus: "open",
-        price: 100,
-      },
-      {
-        // เพิ่มจำนวน product
-        name: "moo test",
-        imageURL: "https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp",
-        quantity: 10,
-        about: "testt",
-        atatus: "open",
-        price: 120,
-      },
-    ],
+    list: [],
   }),
-  actions: { // เพิ่ม action searchText เพื่อใช้ในการค้นหา product
-    filterProducts (searchText) {
-      return this.list.filter(Product => Product.name.includes(searchText)) 
-    }
-  }
+  actions: { // ทำการเพิ่ม loadProduct() เพื่อให้หน้า HomeView สามารถดึงข้อมูลจาก localStorage จากหลังบ้านมาแสดงที่หน้าบ้านได้
+    loadProduct() {
+      //สำหรับดึงข้อมูล product ทั้งหมด จาก localstorage และ save ใส่ state list
+      const productList = localStorage.getItem("product-data");
+      if (productList) {
+        this.list = JSON.parse(productList);
+        this.loaded = true; // ถ้ามีการ loaded ไปแล้วจะเป็น ture
+      }
+    },
+
+    // เพิ่ม action searchText เพื่อใช้ในการค้นหา product
+    filterProducts(searchText) {
+      return this.list.filter((Product) => Product.name.includes(searchText));
+    },
+  },
 });
