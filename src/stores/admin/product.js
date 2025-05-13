@@ -31,8 +31,8 @@ export const useAdminProductStore = defineStore("product", {
     },
     updateproduct(index, productdata) {
       //สำหรับ update ข้อมูล product เข้า list และ save ลง localstorage
-      this.list[index].name = productdata.name;
-      this.list[index].image = productdata.image;
+      this.list[index].name = prUrloductdata.name;
+      this.list[index].imageUrl = productdata.imageUrl;
       this.list[index].price = productdata.price;
       this.list[index].quantity = productdata.quantity;
       this.list[index].remainQuantity = productdata.remainQuantity;

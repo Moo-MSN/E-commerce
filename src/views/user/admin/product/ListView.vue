@@ -33,7 +33,7 @@ const removeProduct = (index) => {
       <tr v-for="(product, index) in adminProductStore.list">
         <th>{{ product.name }}</th>
         <td>
-          <img :src="product.image" class="w-12" />
+          <img :src="product.imageUrl" class="w-12" />
         </td>
         <td>{{ product.price }}</td>
         <td>{{ product.quantity }}</td>

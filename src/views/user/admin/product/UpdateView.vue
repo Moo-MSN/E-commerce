@@ -16,7 +16,7 @@ onMounted(() => {
     const selectProduct = adminProductStore.getProduct(productIndex.value);
     //เนื่องจาก reactive ไม่สามารถแทนทั้งตัวลงไปได้ เราเลยต้องทำแต่ละ field ออกมา
     productData.name = selectProduct.name;
-    productData.image = selectProduct.image;
+    productData.imageUrl = selectProduct.imageUrl;
     productData.price = selectProduct.price;
     productData.quantity = selectProduct.quantity;
     productData.about = selectProduct.about;
@@ -31,7 +31,7 @@ const route = useRoute();
 const productData = reactive({
   //ใช้เก็บตัวค่า input
   name: "",
-  image: "",
+  imageUrl: "",
   price: 0,
   quantity: 0,
   about: "",
@@ -46,7 +46,7 @@ const formData = [
   },
   {
     name: "Image",
-    field: "image",
+    field: "imageUrl",
   },
   {
     name: "Price",
