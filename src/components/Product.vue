@@ -18,6 +18,7 @@ defineProps ({
         <div class="card-body">
           <h2 class="card-title">{{ product.name }}</h2>
           <p>{{ product.about }}</p>
+          <p>Price: {{ product.price }} B</p>
           <div class="card-actions justify-end">
             <button class="btn btn-primary" @click="addToCart(product)">Buy Now</button>
           </div>
