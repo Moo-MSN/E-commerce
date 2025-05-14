@@ -56,7 +56,7 @@ onMounted(() => {
 
 const updateUser = () => {
   adminUserStore.updateUser(userIndex.value, userData);
-  eventStore.popupMessage ("Success","Update user successful" )
+  eventStore.popupMessage ("success","Update user successful" ) //เมื่อแก้ไข้เสร็จแล้วจะขึ้น Toast มาบอกว่าอัพเดตเรียบร้อยแล้ว
   router.push({ name: "admin-users-list" });
 };
 </script>
