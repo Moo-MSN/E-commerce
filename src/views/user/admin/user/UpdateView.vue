@@ -1,11 +1,12 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute} from "vue-router";
 
 import AdminLayout from "@/layouts/AdminLayout.vue";
 
 import { useAdminUserStore } from "@/stores/admin/user";
 import router from "@/router";
+import { useEventStore } from "@/stores/event";
 
 const formData = [
   //เพิ่ม type เพื่อเลือกใช้ type ใน v-if ในการแสดงข้อมูลออกมากตาม type การทำแบบเรียกว่า form confic ทำให้แก้ไข้หรือเพิ่มเติมได้ง่าย
@@ -18,7 +19,7 @@ const formData = [
     name: "Role",
     field: "role",
     type: "select",
-    dropdownList:['admin','moderator','user']
+    dropdownList: ["admin", "moderator", "user"],
   },
   {
     name: "Status",
@@ -31,6 +32,8 @@ const formData = [
 const adminUserStore = useAdminUserStore();
 const rout = useRoute();
 const userIndex = ref(-1);
+const eventStore = useEventStore();
+
 
 const userData = reactive({
   // ใช้เก็บค่า
@@ -53,6 +56,7 @@ onMounted(() => {
 
 const updateUser = () => {
   adminUserStore.updateUser(userIndex.value, userData);
+  eventStore.popupMessage ("Success","Update user successful" )
   router.push({ name: "admin-users-list" });
 };
 </script>
