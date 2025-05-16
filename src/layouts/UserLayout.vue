@@ -3,6 +3,11 @@ import { ref, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useCartStore } from "@/stores/user/cart";
 
+import { GoogleAuthProvider, signInWithPopup} from "firebase/auth";
+import {auth} from "@/firebase"
+
+const provider = new GoogleAuthProvider();
+
 const router = useRouter();
 const cartStore = useCartStore(); 
 
@@ -16,9 +21,10 @@ onMounted(() => {
   }
 });
 
-const login = () => {
+const login = async () => {
   isLoggedIn.value = true;
   localStorage.setItem("isLoggedIn", true);
+  await signInWithPopup(auth, provider)
 };
 
 const logout = () => { //เมื่อ logout ให้คำสั่งด้านล่างทำอะไรบ้าง
