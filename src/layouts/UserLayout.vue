@@ -3,17 +3,11 @@ import { ref, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 import { useCartStore } from "@/stores/user/cart";
 
-import { GoogleAuthProvider, signInWithPopup} from "firebase/auth";
-import {auth} from "@/firebase"
-
-const provider = new GoogleAuthProvider();
-
 const router = useRouter();
-const cartStore = useCartStore(); 
+const cartStore = useCartStore();
 
 const isLoggedIn = ref(false);
-const searchText = ref('')
-
+const searchText = ref("");
 
 onMounted(() => {
   if (localStorage.getItem("isLoggedIn")) {
@@ -24,28 +18,28 @@ onMounted(() => {
 const login = async () => {
   isLoggedIn.value = true;
   localStorage.setItem("isLoggedIn", true);
-  await signInWithPopup(auth, provider)
 };
 
-const logout = () => { //เมื่อ logout ให้คำสั่งด้านล่างทำอะไรบ้าง
+const logout = () => {
+  //เมื่อ logout ให้คำสั่งด้านล่างทำอะไรบ้าง
   isLoggedIn.value = false;
   localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("cart-data");// ลบข้อมูลใน cart-data 
-  localStorage.removeItem("order-data"); // ลบข้อมูลใน order-data 
-  window.location.reload() // เมื่อ logout ทำการรีเฟรชอีกครั้ง
+  localStorage.removeItem("cart-data"); // ลบข้อมูลใน cart-data
+  localStorage.removeItem("order-data"); // ลบข้อมูลใน order-data
+  window.location.reload(); // เมื่อ logout ทำการรีเฟรชอีกครั้ง
 };
 
-const handleSearch = (event) =>{ // เพิ่ม search เพื่อให้ค้นหาในช่องค้นหาแล้วไปยังหน้า search page
-  if (event.key === 'Enter'){
+const handleSearch = (event) => {
+  // เพิ่ม search เพื่อให้ค้นหาในช่องค้นหาแล้วไปยังหน้า search page
+  if (event.key === "Enter") {
     router.push({
-      name: 'search',
+      name: "search",
       query: {
-        q: searchText.value
-      }
-    })
+        q: searchText.value,
+      },
+    });
   }
-}
-
+};
 </script>
 
 <template>
@@ -56,11 +50,7 @@ const handleSearch = (event) =>{ // เพิ่ม search เพื่อให
       </div>
       <div class="flex gap-2">
         <div>
-          <input type="text" 
-          placeholder="Search" 
-          class="input input-bordered w-24 md:w-auto" 
-          v-model="searchText" 
-          @keyup="handleSearch"/>
+          <input type="text" placeholder="Search" class="input input-bordered w-24 md:w-auto" v-model="searchText" @keyup="handleSearch" />
         </div>
 
         <div class="flex-none">
