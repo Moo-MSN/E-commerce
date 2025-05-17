@@ -1,32 +1,36 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { RouterLink, useRouter } from "vue-router";
+
 import { useCartStore } from "@/stores/user/cart";
+import { useAccountStore } from "@/stores/account";
 
 const router = useRouter();
 const cartStore = useCartStore();
+const accountStore = useAccountStore();
 
-const isLoggedIn = ref(false);
 const searchText = ref("");
 
-onMounted(() => {
-  if (localStorage.getItem("isLoggedIn")) {
-    isLoggedIn.value = true; //ถ้า localstorage มี isLoggedIn อยู่ จะให้ isLoggedIn.value = true
-  }
-});
+onMounted(()=>{
+  accountStore.checkAuth()
+})
 
 const login = async () => {
-  isLoggedIn.value = true;
-  localStorage.setItem("isLoggedIn", true);
+  try { // จะจัดการๆ login ที่ accountStore ที่เรา import useAcoountStore
+    await accountStore.signInWithGoogle();
+  } catch (error) {
+    console.log("error", error);
+  }
 };
 
-const logout = () => {
+const logout = async () => {
   //เมื่อ logout ให้คำสั่งด้านล่างทำอะไรบ้าง
-  isLoggedIn.value = false;
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("cart-data"); // ลบข้อมูลใน cart-data
-  localStorage.removeItem("order-data"); // ลบข้อมูลใน order-data
-  window.location.reload(); // เมื่อ logout ทำการรีเฟรชอีกครั้ง
+  try {
+    await accountStore.logout();
+    window.location.reload(); // เมื่อ logout ทำการรีเฟรชอีกครั้ง
+  } catch (error) {
+    console.log("error", error);
+  }
 };
 
 const handleSearch = (event) => {
@@ -78,12 +82,12 @@ const handleSearch = (event) => {
               </div>
             </div>
           </div>
-          <button @click="login" v-if="!isLoggedIn" class="btn btn-ghost mr-0.5">
+          <button @click="login" v-if="!accountStore.isLoggedIn" class="btn btn-ghost mr-0.5">
             <!-- Add login Button-->
             Login
           </button>
 
-          <div v-if="isLoggedIn" class="dropdown dropdown-end">
+          <div v-else class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
               <div class="w-10 rounded-full">
                 <img alt="Tailwind CSS Navbar component" src="https://yt3.ggpht.com/yti/ANjgQV9MjMEuBPoRXYoFnBnIhoYrL0zDlRzEhaXgl1rWerr3p-Y=s108-c-k-c0x00ffffff-no-rj" />
