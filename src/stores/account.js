@@ -12,16 +12,21 @@ export const useAccountStore = defineStore("account", {
     user: {}, // เอาไว้เก็บ user information เอาไว้
   }),
   actions: {
-    async checkAuth() { // เพิ่มการ onAuthStateChanged เพื่อให้ login ค้างไว้ได้
-      onAuthStateChanged(auth, (user) => {
-        console.log("user", user);
-        if (user) {
-          // User is signed in, see docs for a list of available properties
-          this.user = user;
-          this.isLoggedIn = true;
-          const uid = user.uid;
-          // ...
-        }
+    async checkAuth() {
+      // สร้าง new Promise เมื่อ user มีค่าให้ resolve เป็น true ถ้าไม่มีเป็น false 
+      return new Promise((resolve) => {
+        // เพิ่มการ onAuthStateChanged เพื่อให้ login ค้างไว้ได้
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // User is signed in, see docs for a list of available properties
+            this.user = user;
+            this.isLoggedIn = true;
+            // ถ้ามี user resolve เป็น true
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        });
       });
     },
     async signInWithGoogle() {
