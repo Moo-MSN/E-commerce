@@ -11,8 +11,8 @@ const accountStore = useAccountStore();
 
 const searchText = ref("");
 
-onMounted(()=>{
-  accountStore.checkAuth()
+onMounted(async()=>{
+  await accountStore.checkAuth()
 })
 
 const login = async () => {
