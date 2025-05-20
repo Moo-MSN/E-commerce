@@ -21,6 +21,10 @@ export const useAccountStore = defineStore("account", {
           if (user) {
             // User is signed in, see docs for a list of available properties
             this.user = user;
+            // ถ้า user.email เป็น admin@test.com ให้ Login ค้างไว้ได้ แม้จะทำการ refresh page
+            if (user.email === "admin@test.com") {
+              this.isAdmin = true;
+            }
             this.isLoggedIn = true;
             // ถ้ามี user resolve เป็น true
             resolve(true);
@@ -52,12 +56,12 @@ export const useAccountStore = defineStore("account", {
         console.log("error store = ", error.code);
         //การโยน error ไปแสดงใน console
         switch (error.code) {
-          case 'auth/invalid-email':
+          case "auth/invalid-email":
             throw new Error("Invalid-Email");
-          case 'auth/wrong-password':
-            throw new Error("Password incorrect")
-            default: // ถ้่าไม่เข้าเคส Invalid-Email จะแสดงด้านล่าง 
-              throw new Error("Something wrong in Login!!!")
+          case "auth/wrong-password":
+            throw new Error("Password incorrect");
+          default: // ถ้่าไม่เข้าเคส Invalid-Email จะแสดงด้านล่าง
+            throw new Error("Something wrong in Login!!!");
         }
       }
     },
