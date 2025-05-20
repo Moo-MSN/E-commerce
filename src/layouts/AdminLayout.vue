@@ -22,7 +22,7 @@ const menus = [
   },
   {
     name: "Logout",
-    routeName: "admin-login",
+    routeName: "login",
   },
 ];
 const route = useRoute(); // useRoute สามารถบอกเราได้ว่า เราอยู่หน้าไหน ดึงข้อมูล param quarry

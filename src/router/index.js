@@ -21,9 +21,6 @@ import AdminOrderDetail from "@/views/user/admin/order/DetailView.vue";
 
 import { useAccountStore } from "@/stores/account";
 
-
-
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -60,7 +57,7 @@ const router = createRouter({
     //Admin Site
     {
       path: "/admin/login",
-      name: "admin-login",
+      name: "login",
       component: AdminLogin,
     },
     {
@@ -106,10 +103,16 @@ const router = createRouter({
   ],
 });
 //ทำการสร้าง router.beforeEach เพื่อทำการรันก่อนเว็ปทำการ render เสร็จจะทำให้ icon ของ profile render เสร็จก่อนและจะมองไม่เห็นจังหวะที่ยังไม่ login
-router.beforeEach( async (to,from,next)=>{
+router.beforeEach(async (to, from, next) => {
   const accountStore = useAccountStore();
-  await accountStore.checkAuth()
-  next()
-})
+  await accountStore.checkAuth();
+  //ถ้าเราไม่ใช่ admin แล้วพยายามเข้า เราจะโดนดึงมาที่หน้า Home เป็นการทำ Guard ใน Navigation
+  if (to.name.includes("admin") && !accountStore.isAdmin) {
+    next({ name: "home" });
+  } else {
+    // พอกลับมาที่หน้า Home ค่อย render หน้าเว็ป
+    next();
+  }
+});
 
 export default router;
