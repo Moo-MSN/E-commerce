@@ -109,6 +109,9 @@ router.beforeEach(async (to, from, next) => {
   //ถ้าเราไม่ใช่ admin แล้วพยายามเข้า เราจะโดนดึงมาที่หน้า Home เป็นการทำ Guard ใน Navigation
   if (to.name.includes("admin") && !accountStore.isAdmin) {
     next({ name: "home" });
+    // ถ้า login ด้วย admin acoount อยู่ ให้ไปหน้า admin page เมื่อทำการ refresh ได้โดยไม่ต้อง login ใหม่
+  } else if (to.name === "login" && accountStore.isAdmin) {
+    next({ name: "admin-dashboard" });
   } else {
     // พอกลับมาที่หน้า Home ค่อย render หน้าเว็ป
     next();
