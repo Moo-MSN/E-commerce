@@ -2,7 +2,10 @@ import { defineStore } from "pinia";
 
 //import มาจาก UserLayoutเพื่อนำมาแยกให้ใช้ร่วมกันกับหน้าอื่นได้
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase";
+import { auth, db } from "@/firebase";
+
+// import firestore มาเพื่อรับข้อมูล ส่งข้อมูลเป็นรายข้อมูล ซึ่งต่างจาก Doc ที่มี s จะดึงมาทั้งหมด
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const provider = new GoogleAuthProvider();
 
@@ -11,21 +14,46 @@ export const useAccountStore = defineStore("account", {
     isLoggedIn: false, // สร้างมาเช็คว่า login แล้วหรือยัง
     user: {}, // เอาไว้เก็บ user information เอาไว้
     isAdmin: false, // เพิ่มมาสำหรับการ login แบบ Admin
+    Profile:{} // สร้างเพื่อเก็บ role 
   }),
   actions: {
     async checkAuth() {
       // สร้าง new Promise เมื่อ user มีค่าให้ resolve เป็น true ถ้าไม่มีเป็น false
       return new Promise((resolve) => {
         // เพิ่มการ onAuthStateChanged เพื่อให้ login ค้างไว้ได้
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
           if (user) {
             // User is signed in, see docs for a list of available properties
             this.user = user;
+            console.log("user", user);
+            //ทำการ getDoc() จาก fireStore 
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+
+            //มีข้อมูลอยู่แล้ว
+            if (docSnap.exists()) {
+              //เป็นการดึง data จาก docSnap 
+              this.Profile = docSnap.data()
+            } else {
+              //ยังไม่มีข้อมูล = สร้างข้อมูลใหม่
+              const newUser = {
+                name: user.displayName,
+                role: "member",
+                status: "active",
+                updatedAt: new Date(),
+              };
+              // ทำการสร้างที่ื docRef ค่าที่ส่งคือ newUser
+              await setDoc(docRef,newUser)
+              this.Profile = newUser()
+            }
             // ถ้า user.email เป็น admin@test.com ให้ Login ค้างไว้ได้ แม้จะทำการ refresh page
-            if (user.email === "admin@test.com") {
+            console.log("profile",this.Profile)
+            if (this.Profile.role === "admin") {
               this.isAdmin = true;
             }
             this.isLoggedIn = true;
+            //สำหรับสร้าง user = สร้าง data เข้า collection user ทันที
+
             // ถ้ามี user resolve เป็น true
             resolve(true);
           } else {
