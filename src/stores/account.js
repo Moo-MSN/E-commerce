@@ -37,7 +37,7 @@ export const useAccountStore = defineStore("account", {
             } else {
               //ยังไม่มีข้อมูล = สร้างข้อมูลใหม่
               const newUser = {
-                name: user.displayName,
+                adminName: user.displayName,
                 role: "member",
                 status: "active",
                 updatedAt: new Date(),
