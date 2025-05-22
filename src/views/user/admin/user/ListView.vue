@@ -1,14 +1,17 @@
 <script setup>
 import AdminLayout from "@/layouts/AdminLayout.vue";
+import { onMounted } from "vue";
 import { RouterLink } from "vue-router";
 import { useAdminUserStore } from "@/stores/admin/user";
 
 import Table from "@/components/Table.vue";
-import edit from "@/components/icon/edit.vue";
-import trash from "@/components/icon/trash.vue";
 
 
 const adminUserStoer = useAdminUserStore()
+
+onMounted (async()=>{
+ await adminUserStoer.loadUser()
+})
 
 const changeStatus = (index) => {
   // สร้าง selectedUser เพื่อมารับค่า
