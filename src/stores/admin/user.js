@@ -28,16 +28,36 @@ export const useAdminUserStore = defineStore("admin-user", {
       // ทำการดึงข้อมูลมาแสดงในหน้า admin ListView
       this.list = userList;
     },
-    async getUser(index) {
-      return this.list[index];
-    },
-    async updateUser(index, userData) {
-      const fields = ["adminName", "role", "status"];
-      for (let field of fields) {
-        // เป็นการ loop field ใน [] ออกมา
-        this.list[index][field] = userData[field];
+    async getUser(uid) {
+      try {
+        // จิ้มไปยัง doc(db, "users", uid)
+        const userRef = doc(db, "users", uid);
+        // ทำการดึงมาเก็บไว้ที่ userSnapshot
+        const userSnapshot = await getDoc(userRef);
+        console.log(userSnapshot);
+        // ทำการ return แล้ว conver
+        return userSnapshot.data();
+      } catch (error) {
+        console.log("error", error);
       }
-      this.list[index].updatedAt = new Date().toISOString();
+      //return this.list[index];
+    },
+    async updateUser(uid, userData) {
+      try {
+        //เราอยากได้ข้อมูลอะไรไป update
+        const updatedUser = {
+          adminName: userData.adminName,
+          status: userData.status,
+          role: userData.role,
+          updatedAt: new Date(),
+        };
+        // จิ้มไปยัง doc(db,"users",uid)
+        const docRef = doc(db, "users", uid);
+        // แล้วทำการสร้าง user ใหม่ไปยัง doc(db,"users",uid) โดยมีข้อมูลตาม updatedUser
+        await setDoc(docRef, updatedUser);
+      } catch (error) {
+        console.log("error", error);
+      }
     }, // ตัวด้านบนสามารถเขียนอีกแบบได้เหมือนก้านล่าง
     // ด้านล่างคือการใช้แบบยาว เก็บ index และค่าของ userData
     //this.list[index].adminName = userData.adminName
