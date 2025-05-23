@@ -42,20 +42,20 @@ const userData = reactive({
   status: "",
 });
 
-onMounted(() => {
+onMounted(async() => {
   //นำข้อมูลมาใส่ userData โดยการเอาข้อมูลมาจาก user.js โดยต้องอ่านผ่าน params
   if (rout.params.id) {
     // ถ้า rout.params.id มีิิอยู่ ให้
-    userIndex.value = parseInt(rout.params.id);
-    const selectedUser = adminUserStore.getUser(userIndex.value); // และทำการ getUser(userindex.value) ในแต่ละ Index
+    userIndex.value = rout.params.id;
+    const selectedUser = await adminUserStore.getUser(userIndex.value); // และทำการ getUser(userindex.value) ในแต่ละ Index
     userData.adminName = selectedUser.adminName; // มาใส่ใน reactive แล้วแสดงค่าตาม field ออกมา
     userData.role = selectedUser.role;
     userData.status = selectedUser.status;
   }
 });
 
-const updateUser = () => {
-  adminUserStore.updateUser(userIndex.value, userData);
+const updateUser = async() => {
+  await adminUserStore.updateUser(userIndex.value, userData);
   eventStore.popupMessage ("success","Update user successful" ) //เมื่อแก้ไข้เสร็จแล้วจะขึ้น Toast มาบอกว่าอัพเดตเรียบร้อยแล้ว
   router.push({ name: "admin-users-list" });
 };

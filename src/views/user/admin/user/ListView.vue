@@ -13,11 +13,11 @@ onMounted (async()=>{
  await adminUserStoer.loadUser()
 })
 
-const changeStatus = (index) => {
+const changeStatus = async (index) => {
   // สร้าง selectedUser เพื่อมารับค่า
   let selectedUser = adminUserStoer.list[index] // เป็นการเลือกเอาข้อมูลเดิมออกมาก่อน
   selectedUser.status = selectedUser.status === 'active'?'inactive':'active'// ถ้า status เป็น active ให้เปลี่ยนเป็น inactive แต่ถ้าไม่ใช่ให้เปลี่ยนเป็น active
-  adminUserStoer.updateUser(selectedUser) // แล้วค่อยทำการส่งข้อมูลเดิมกับ selectedUser.status กลับไป
+ await adminUserStoer.updateUser(selectedUser.uid ,selectedUser) // แล้วค่อยทำการส่งข้อมูลเดิมกับ selectedUser.status กลับไป
 }
 </script>
 
@@ -34,7 +34,7 @@ const changeStatus = (index) => {
       <td>{{ user.updatedAt }}</td>
       <td>
         <div class="flex gap-2">
-          <RouterLink :to="{name:'admin-users-update', params:{id:index}}" class="btn">Edit</RouterLink>
+          <RouterLink :to="{name:'admin-users-update', params:{id:user.uid}}" class="btn">Edit</RouterLink>
           <button class="btn" @click="changeStatus(index)">{{ user.status === 'active' ? 'Disable' : 'Enable'}}</button>
           <!--ถ้า status เป็น active ปุ่มจะเป็น Disable ถ้าไม่จะเป็น Eanble (if-else 1 บรรทัด)-->
         </div>
