@@ -7,13 +7,13 @@ import { useAdminProductStore } from "@/stores/admin/product";
 const productIndex = ref(-1); // ประกาศตำแหน่ง productIndex
 const mode = ref("ADD"); // add mode เข้ามาเพื่อเวลาเปลี่ยนไปหน้า update จะได้เปลี่ยนจาก ADD to EDIT เมื่อมี route.params.id
 
-onMounted(() => {
+onMounted(async () => {
   if (route.params.id) {
     // ถ้ามี route.params.id จะทำการเปลี่ยน mode จาก ADD เป็น EDIT
-    productIndex.value = parseInt(route.params.id);
-    mode.value = "EDIT";
+    productIndex.value = route.params.id;
+    mode.value = "EDIT"; 
 
-    const selectProduct = adminProductStore.getProduct(productIndex.value);
+    const selectProduct = await adminProductStore.getProduct(productIndex.value);
     //เนื่องจาก reactive ไม่สามารถแทนทั้งตัวลงไปได้ เราเลยต้องทำแต่ละ field ออกมา
     productData.name = selectProduct.name;
     productData.imageUrl = selectProduct.imageUrl;
@@ -62,13 +62,19 @@ const formData = [
   },
 ];
 
-const updateproduct = () => {
-  if (mode.value === "EDIT") { // ถ้า mode.value เป็น EDIT ให้ทำการ update
-    adminProductStore.updateProduct(productIndex.value, productData);
-  } else {// แต่ถ้าไม่ใช่ EDIT ให้เพิ่ม product ใหม่
-    adminProductStore.addProduct(productData);
+const updateproduct = async () => {
+  try {
+    if (mode.value === "EDIT") {
+      // ถ้า mode.value เป็น EDIT ให้ทำการ update
+      await adminProductStore.updateProduct(productIndex.value, productData);
+    } else {
+      // แต่ถ้าไม่ใช่ EDIT ให้เพิ่ม product ใหม่
+      await adminProductStore.addProduct(productData);
+    }
+    router.push({ name: "admin-products-list" }); // เมื่อ click addProduct จะเด้งไปหน้า products-list
+  } catch (error) {
+    console.log("error", error);
   }
-  router.push({ name: "admin-products-list" }); // เมื่อ click addProduct จะเด้งไปหน้า products-list
 };
 </script>
 
@@ -98,7 +104,7 @@ const updateproduct = () => {
         </fieldset>
       </div>
       <div class="flex justify-end mt-4">
-        <RouterLink :to="{ name: 'admin-dashboard' }" class="btn btn-ghost">BACK</RouterLink>
+        <RouterLink :to="{ name: 'admin-products-list' }" class="btn btn-ghost">BACK</RouterLink>
         <!--เมื่อ click จะกลับยังหน้า dashboard-->
         <button class="btn btn-neutral" @click="updateproduct()">{{ mode }}</button>
         <!--เมื่อ click จะส่งค่าที่อยู่ใน reactive ไปใส่ใน productData-->
