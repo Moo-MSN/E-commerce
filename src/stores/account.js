@@ -14,7 +14,7 @@ export const useAccountStore = defineStore("account", {
     isLoggedIn: false, // สร้างมาเช็คว่า login แล้วหรือยัง
     user: {}, // เอาไว้เก็บ user information เอาไว้
     isAdmin: false, // เพิ่มมาสำหรับการ login แบบ Admin
-    Profile:{} // สร้างเพื่อเก็บ role 
+    Profile: {}, // สร้างเพื่อเก็บ role
   }),
   actions: {
     async checkAuth() {
@@ -26,14 +26,14 @@ export const useAccountStore = defineStore("account", {
             // User is signed in, see docs for a list of available properties
             this.user = user;
             console.log("user", user);
-            //ทำการ getDoc() จาก fireStore 
+            //ทำการ getDoc() จาก fireStore
             const docRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(docRef);
 
             //มีข้อมูลอยู่แล้ว
             if (docSnap.exists()) {
-              //เป็นการดึง data จาก docSnap 
-              this.Profile = docSnap.data()
+              //เป็นการดึง data จาก docSnap
+              this.Profile = docSnap.data();
             } else {
               //ยังไม่มีข้อมูล = สร้างข้อมูลใหม่
               const newUser = {
@@ -43,12 +43,14 @@ export const useAccountStore = defineStore("account", {
                 updatedAt: new Date(),
               };
               // ทำการสร้างที่ื docRef ค่าที่ส่งคือ newUser
-              await setDoc(docRef,newUser)
-              this.Profile = newUser()
+              await setDoc(docRef, newUser);
+              this.Profile = newUser;
             }
             // ถ้า user.email เป็น admin@test.com ให้ Login ค้างไว้ได้ แม้จะทำการ refresh page
-            console.log("profile",this.Profile)
-            if (this.Profile.role === "admin") {
+            console.log("profile", this.Profile);
+            // เพิ่ม || this.Profile.role === "moderator" เพื่อเข้ามาดูหลังบ้านได้ แต่ไม่สามารถดู user หลังบ้านได้
+            if (this.Profile.role === "admin" 
+              || this.Profile.role === "moderator") {
               this.isAdmin = true;
             }
             this.isLoggedIn = true;
