@@ -3,7 +3,29 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
+    // check uid ไม่เท่ากับ null โดยใช้ users/$(request.auth.uid) เป็น key ถ้า data.role เป็น admin แสดงว่าเป็น admin 
+     
+     function isAdmin() {
+      return request.auth.uid != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // คนที่จะอ่าน collection ได้ ต้องทำการ login และต้องเป็นเจ้าข้อมูลนั้นจึงสามารถอ่านได้ หรือ ต้องเป็น admin จึงสามารถอ่านหรือเขียนได้
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // ควรใส่ parth ให้เรียบร้อยก่อน เพราะจะทำให้การกั้นสิทธิ์ของ admin มีผล ไม่ควรเป็น default
+    
+    match /products/{productId} {
+      // จำกัดสิทธิ์ให้เฉพาะ admin อ่านหรือเขียน สินค้าที่สถานะ close || ส่วนหน้าบ้านจะเห็นแค่สินค้าที่สถานะ open 
+      allow read: if (request.auth != null && isAdmin()) || (resource.data.status == 'open');
+      allow write: if (request.auth != null && isAdmin()) || (resource.data.status == 'open');
+      
+    }
+  }
+}
+// This rule allows anyone with your Firestore database reference to view, edit,
     // and delete all data in your Firestore database. It is useful for getting
     // started, but it is configured to expire after 30 days because it
     // leaves your app open to attackers. At that time, all client
@@ -12,8 +34,4 @@ service cloud.firestore {
     // Make sure to write security rules for your app before that time, or else
     // all client requests to your Firestore database will be denied until you Update
     // your rules
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 6, 13);
-    }
-  }
-}
+    // request.time < timestamp.date(2025, 6, 13)
