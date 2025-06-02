@@ -1,17 +1,35 @@
 import { defineStore } from "pinia";
 // import firestore for use CRUD in product admin page
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc,query,where,orderBy } from "firebase/firestore";
 import { db } from "@/firebase";
 
 export const useAdminProductStore = defineStore("product-data", {
   state: () => ({
     list: [],
-    loaded: false,
+    // เพิ่ม filter เข้ามาเพื่อทำการจัดเรียงข้อมูลใน admin page in product list
+    filter: {
+      search:"",
+      status:"",
+      sort:{
+        updatedAt:"desc",
+      }
+    }
   }),
   actions: {
     async loadProduct() {
       // จิ้มไปที่ collection(db,"products")
-      const productCol = collection(db, "products");
+      let productCol = query( collection(db, "products"),orderBy('updatedAt', this.filter.sort.updatedAt));
+      if (this.filter.search) {
+        console.log("search", this.filter.search)
+        // ใช้ในการค้นหาในช่องการค้นหา
+        productCol = query(productCol, where('name', '==', this.filter.search))
+      }
+      if (this.filter.status){
+        console.log ("status", this.filter.status)
+        // ใช้ในการ filter status ของสินค้าที่ open and close 
+        productCol = query(productCol,where('status', "==", this.filter.status))
+      }
+
       // รับข้อมูลมาเก็บไว้ที่ productSnapshot
       const productSnapshot = await getDocs(productCol);
       // ทำการ convert productSnapshot.docs ด้วย .map แล้ว retrun เป็น doc.data() ที่ใช้ใน javaScript ได้ แล้วเก็บไว้ที่ products
