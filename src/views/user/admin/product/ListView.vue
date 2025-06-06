@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import { useAdminProductStore } from "@/stores/admin/product";
 import { RouterLink } from "vue-router";
@@ -7,6 +7,7 @@ import { RouterLink } from "vue-router";
 import Table from "@/components/Table.vue";
 import trash from "@/components/icon/trash.vue"; // import icon
 import edit from "@/components/icon/edit.vue"; // import icon
+import pagination from "@/components/pagination.vue"; // import icon next and previous
 
 const adminProductStore = useAdminProductStore();
 
@@ -34,6 +35,20 @@ const changeSortUpdatedAt = async (newSort) => {
   // เมื่อกดที่ ASC or DESC จะนำค่าที่เรากดไป ไปใส่ค่าใน adminProductStoer แล้วทำการ loadproduct อีกรอบ พร้อมค่าที่ค้นที่ตรงกัน
   adminProductStore.filter.sort.updatedAt = newSort;
   await adminProductStore.loadProduct();
+};
+
+const currentPage = ref(1);
+
+const changePage = async (newPage) => {
+  if (newPage < currentPage.value) {
+    //ย้อนกลับ
+    await adminProductStore.loadNextProduct("previous")
+  } else if (newPage > currentPage.value) {
+    //ไปข้างหน้า
+    await adminProductStore.loadNextProduct("next");
+  }
+  currentPage.value = newPage
+  console.log("newpage", newPage);
 };
 </script>
 
@@ -104,5 +119,6 @@ const changeSortUpdatedAt = async (newSort) => {
         </td>
       </tr>
     </Table>
+    <pagination  :activePage="currentPage" :maxPage="adminProductStore.totalPage" :changePage="changePage"> </pagination>
   </AdminLayout>
 </template>
