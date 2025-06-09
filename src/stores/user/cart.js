@@ -1,4 +1,7 @@
 import { defineStore } from "pinia";
+import { db } from "@/firebase";
+import { doc, updateDoc, increment,writeBatch } from "firebase/firestore";
+
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [],
@@ -50,16 +53,35 @@ export const useCartStore = defineStore("cart", {
       this.items.splice(index, 1);
       localStorage.setItem("cart-data", JSON.stringify(this.items)); // เป็นการ save item เป็น string ไว้ใน localstorage
     },
-    placeorder(userData) {
-      const orderData = {
-        ...userData, // เป็นการต่อข้อมูลใน object โดยการเพิ่มข้อมูลด้านล่าง
-        totalPrice: this.summaryPrice,
-        paymentMethod: "Credit Card",
-        createdData: new Date().toLocaleString(),
-        orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
-        products: this.items,
-      };
-      localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
+    async placeorder(userData) {
+      try {
+        const orderData = {
+          ...userData, // เป็นการต่อข้อมูลใน object โดยการเพิ่มข้อมูลด้านล่าง
+          totalPrice: this.summaryPrice,
+          paymentMethod: "Credit Card",
+          createdData: new Date().toLocaleString(),
+          orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
+          products: this.items,
+        };
+        console.log(orderData.products);
+        // สร้าง batch เพื่อเรียกใช้ writeBatch 
+        const batch = writeBatch(db)
+        // ทำการ loop product ทุกตัวภายใน Array ของ orderData.product
+        for (const product of orderData.products) {
+          // สร้าง productRef เพื่อเลือกไป (db, "products", product.productId)
+          const productRef = doc(db, "products", product.productId);
+          // แล้วทำการ updateDoc ไปที่ productRef แล้วเลือก field ที่ต้องการอัพเดตคือ remainQuantity โดยใช้ increment(-1) เพื่อทำการลดจำนวนที่ละ 1
+          // เปลี่ยนจาก updateDoc เป็น batch.update เพราะ
+          batch.update(productRef, {
+            remainQuantity: increment(-1),
+          });
+
+        }
+        await batch.commit()
+        localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
+      } catch (error) {
+        console.log("error", error);
+      }
     },
     loadCheckout() {
       // เป็นการสร้างขึ้นมาเพิ่อรับ order-data จาก localstorage ถ้ามีข้อมูลให้แสดง order แต่ถ้าไม่มีให้ไปยังหน้าอื่น
