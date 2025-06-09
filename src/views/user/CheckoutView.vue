@@ -37,7 +37,7 @@ const userFormData = reactive({
 
 const payment = () => {
   cartStore.placeorder(userFormData);
-  router.push({ name: "success" });
+  //router.push({ name: "success" });
 };
 </script>
 
