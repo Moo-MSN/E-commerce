@@ -5,7 +5,8 @@ import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signI
 import { auth, db } from "@/firebase";
 
 // import firestore มาเพื่อรับข้อมูล ส่งข้อมูลเป็นรายข้อมูล ซึ่งต่างจาก Doc ที่มี s จะดึงมาทั้งหมด
-import { doc, getDoc, setDoc } from "firebase/firestore";
+// updateDoc จะทำการอัพเดตเป็นราย field 
+import { doc, getDoc, setDoc,updateDoc } from "firebase/firestore";
 
 const provider = new GoogleAuthProvider();
 
@@ -14,7 +15,7 @@ export const useAccountStore = defineStore("account", {
     isLoggedIn: false, // สร้างมาเช็คว่า login แล้วหรือยัง
     user: {}, // เอาไว้เก็บ user information เอาไว้
     isAdmin: false, // เพิ่มมาสำหรับการ login แบบ Admin
-    Profile: {}, // สร้างเพื่อเก็บ role
+    profile: {}, // สร้างเพื่อเก็บ role
   }),
   actions: {
     async checkAuth() {
@@ -33,7 +34,7 @@ export const useAccountStore = defineStore("account", {
             //มีข้อมูลอยู่แล้ว
             if (docSnap.exists()) {
               //เป็นการดึง data จาก docSnap
-              this.Profile = docSnap.data();
+              this.profile = docSnap.data();
             } else {
               //ยังไม่มีข้อมูล = สร้างข้อมูลใหม่
               const newUser = {
@@ -44,16 +45,18 @@ export const useAccountStore = defineStore("account", {
               };
               // ทำการสร้างที่ื docRef ค่าที่ส่งคือ newUser
               await setDoc(docRef, newUser);
-              this.Profile = newUser;
+              this.profile = newUser;
             }
             // ถ้า user.email เป็น admin@test.com ให้ Login ค้างไว้ได้ แม้จะทำการ refresh page
-            console.log("profile", this.Profile);
+            console.log("profile", this.profile);
             // เพิ่ม || this.Profile.role === "moderator" เพื่อเข้ามาดูหลังบ้านได้ แต่ไม่สามารถดู user หลังบ้านได้
-            if (this.Profile.role === "admin" 
-              || this.Profile.role === "moderator") {
+            if (this.profile.role === "admin" 
+              || this.profile.role === "moderator") {
               this.isAdmin = true;
             }
             this.isLoggedIn = true;
+            // ดึง email มาไว้เพื่อใช้ในการแสดงในหน้า profileview
+            this.profile.email = user.email
             //สำหรับสร้าง user = สร้าง data เข้า collection user ทันที
 
             // ถ้ามี user resolve เป็น true
@@ -64,6 +67,23 @@ export const useAccountStore = defineStore("account", {
         });
       });
     },
+    // สร้างการ update profile รับเป็น userData 
+    async updateProfile (userData){
+      try{
+       const updateUserData = {
+        adminName: userData.adminName,
+        imageUrl: userData.imageUrl
+      } 
+      // จิ้มไปยังตำแหน่งที่ต้องการจะแก้ไข้ ตัวแปลที่เก็บ uid ไว้คือ user ด้านบน
+      const userRef = doc(db, `users/${this.user.uid}`)
+      // แล้วทำการ update ข้อมูลไปที่ userRef แล้วการเปลี่ยนข้อมูลที่ต้องการผ่าน updateUserData
+      await updateDoc(userRef,updateUserData)
+      } catch (error){
+        console.log("error",error)
+      }
+      
+    },
+
     async signInWithGoogle() {
       // try,catch เพื่อป้องกัน error
       try {
