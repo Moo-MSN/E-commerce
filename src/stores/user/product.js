@@ -16,7 +16,12 @@ export const useProductStore = defineStore("product", {
       //สำหรับดึงข้อมูล products ทั้งหมด จาก root firebase Emulator ที่ชื่อ products
       const productSnapshot = await getDocs(productCol);
       // ทำการ map ข้อมูลแต่ละตัวแล้ว return แต่ละตัวออกมา
-      const products = productSnapshot.docs.map((doc) => doc.data());
+      const products = productSnapshot.docs.map((doc) => {
+        // ทำการ convert ข้อมูลเพื่อใช้ productId ในการไปตัดจำนวนของ remainQuantity
+        const convertedData = doc.data()
+        convertedData.productId = doc.id
+        return convertedData
+      });
       // ถ้า products.length > 0 ให้ products แทนค่าเป็น list ออกมา
       if (products.length > 0) {
         this.list = products;
