@@ -33,4 +33,4 @@ connectAuthEmulator(auth, "http://127.0.0.1:9099");
 const storage = getStorage()
 connectStorageEmulator(storage,"127.0.0.1",9199)
 4000
-export { db, auth };
+export { db, auth, storage };
