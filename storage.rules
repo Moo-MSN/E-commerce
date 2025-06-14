@@ -5,8 +5,15 @@ rules_version = '2';
 //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if true;
+// เป็นการจำกัดสิทธิ์ให้คนที่ login แล้ว uid ตรงกับ userId
+    match /users/{userId}/{imageId} {
+      allow read;
+      allow write: if request.auth.uid == userId
+    }
+// เป็นการเช็คว่า login อยู่หรือไม่ โดยที่ auth != null และถ้า data.role != member ถ้าเป็น moderator or admin สามารถแก้ไข้ได้
+    match /products/{productId}{
+      allow read;
+      allow write: if request.auth != null && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role != "member"
     }
   }
 }
