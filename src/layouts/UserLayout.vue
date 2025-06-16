@@ -18,6 +18,8 @@ onMounted(async()=>{
 const login = async () => {
   try { // จะจัดการๆ login ที่ accountStore ที่เรา import useAcoountStore
     await accountStore.signInWithGoogle();
+    // ทำการ reload หน้าเว็ปใหม่เมื่อมีการ login ใหม่อีกครั้ง
+    location.reload()
   } catch (error) {
     console.log("error", error);
   }
