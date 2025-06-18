@@ -30,7 +30,7 @@ const changeQuantity = (event,index) => {
 
         <div class="flex" v-else v-for=" (item, index) in cartStore.items"> <!-- v-else เพื่อควบคุมการแสดง Cart is empty-->
           <div class="flex-1">
-            <img class="w-full p-10" :src="item.imageURL" /> <!--Edit src to :src = "item.imageURL"-->
+            <img class="w-full p-10" :src="item.imageUrl" /> <!--Edit src to :src = "item.imageURL"-->
           </div>
           <div class="flex-1">
             <div class="flex flex-col justify-between h-full">
