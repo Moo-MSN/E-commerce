@@ -1,6 +1,12 @@
 import { defineStore } from "pinia";
-import { db } from "@/firebase";
-import { doc, updateDoc, increment,writeBatch } from "firebase/firestore";
+// import realtimeDB เพื่อในเรียกหน้าตะกร้า
+import { db, realtimeDB } from "@/firebase";
+import { doc, updateDoc, increment, writeBatch } from "firebase/firestore";
+// import "firebase/database" เพื่อใช้ในการสร้างหรือดึงข้อมูลตะกร้าออกมาเวลาที่ user logged in
+import { ref, onValue, set } from "firebase/database";
+
+// import useAccountstore เพื่อ ทำการเช็คว่ามีการ login เข้ามาก่อนหรือไม่
+import { useAccountStore } from "../account";
 
 export const useCartStore = defineStore("cart", {
   state: () => ({
@@ -20,16 +26,46 @@ export const useCartStore = defineStore("cart", {
         return acc + item.price * item.quantity; // ทำการ return ค่าใหม่ ที่สะสมใน acc
       }, 0); // 0 คือค่าเริ่มต้นใน summaprice
     },
+    // ประกาศตรง getter เพื่อเป็นการดึงข้อมูลของ user ออกมาก่อน
+    user(state) {
+      const accountStore = useAccountStore();
+      return accountStore.user;
+    },
+    // สร้าง ref ที่เราจะไปยังตะกร้าสินค้า
+    // ทำการสร้างที่ getter เพื่อที่เราจะเรียกใช้ cartRef ในการ ดึง,สร้าง,อัพเดต,ลบ
+    cartRef(state) {
+      return ref(realtimeDB, `carts/${this.user.uid}`);
+    },
   },
   actions: {
-    loadCart() {
-      // ถ้าเราทำการ เพิ่ม ของในตะกร้าหรือแก้ไ้หน้่่าตะกร้า จะทำการอัพเดตใหม่ใน localstorage
-      const previousCart = localStorage.getItem("cart-data");
-      if (previousCart) {
-        this.items = JSON.parse(previousCart);
+    async loadCart() {
+      // ทำการดัก login ว่าถ้ามี this.user.uid มี uid แสดงว่า logged in
+      console.log("user cart", this.user);
+      if (this.user.uid) {
+        onValue(
+          this.cartRef,
+          (snapshot) => {
+            const data = snapshot.val();
+            // ถ้ามี data คือมี item ค่อยแสดงออกไป
+            if (data) {
+              this.items = data;
+            }
+            console.log("data", data);
+          },
+          (err) => {
+            console.log("error", err);
+          }
+        );
+        // แต่ถ้าไม่ได้ login ให้ดึงข้อมูลตะกร้ามาจาก localstorage
+      } else {
+        // ถ้าเราทำการ เพิ่ม ของในตะกร้าหรือแก้ไ้หน้่่าตะกร้า จะทำการอัพเดตใหม่ใน localstorage
+        const previousCart = localStorage.getItem("cart-data");
+        if (previousCart) {
+          this.items = JSON.parse(previousCart);
+        }
       }
     },
-    addToCart(productDatd) {
+    async addToCart(productDatd) {
       const findProductIndex = this.items.findIndex((item) => {
         // หา index ว่ามี product เดิมอยู่ในตะกร้าหรือไม่
         return item.name === productDatd.name;
@@ -42,15 +78,20 @@ export const useCartStore = defineStore("cart", {
         const cerrentItem = this.items[findProductIndex]; // แต่ถ้ามีเอา findeProductIndex ออกมาแล้วบวก quantity เดิมแล้วไป update ตะกร้าสินค้า
         this.updateQuantity(findProductIndex, cerrentItem.quantity + 1);
       }
-
+      // ทำการ set ข้อมูลไปยัง database
+      await set(this.cartRef, this.items);
       localStorage.setItem("cart-data", JSON.stringify(this.items)); // เป็นการ save item เป็น string ไว้ใน localstorage
     },
-    updateQuantity(index, quantity) {
+    async updateQuantity(index, quantity) {
       this.items[index].quantity = quantity; // การปรับตัวเลขใหม่เมื่อเราเปลี่ยนจำนวนในตระกร้า
+      // ทำการ set ข้อมูลไปยัง database
+      await set(this.cartRef, this.items);
       localStorage.setItem("cart-data", JSON.stringify(this.items)); // เป็นการ save item เป็น string ไว้ใน localstorage
     },
-    removeItemInCart(index) {
+    async removeItemInCart(index) {
       this.items.splice(index, 1);
+      // ทำการ set ข้อมูลไปยัง database
+      await set(this.cartRef, this.items);
       localStorage.setItem("cart-data", JSON.stringify(this.items)); // เป็นการ save item เป็น string ไว้ใน localstorage
     },
     async placeorder(userData) {
@@ -64,8 +105,8 @@ export const useCartStore = defineStore("cart", {
           products: this.items,
         };
         console.log(orderData.products);
-        // สร้าง batch เพื่อเรียกใช้ writeBatch 
-        const batch = writeBatch(db)
+        // สร้าง batch เพื่อเรียกใช้ writeBatch
+        const batch = writeBatch(db);
         // ทำการ loop product ทุกตัวภายใน Array ของ orderData.product
         for (const product of orderData.products) {
           // สร้าง productRef เพื่อเลือกไป (db, "products", product.productId)
@@ -75,9 +116,8 @@ export const useCartStore = defineStore("cart", {
           batch.update(productRef, {
             remainQuantity: increment(-1),
           });
-
         }
-        await batch.commit()
+        await batch.commit();
         localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
       } catch (error) {
         console.log("error", error);
