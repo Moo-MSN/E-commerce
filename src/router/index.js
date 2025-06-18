@@ -20,6 +20,8 @@ import AdminOrderList from "@/views/user/admin/order/ListView.vue";
 import AdminOrderDetail from "@/views/user/admin/order/DetailView.vue";
 
 import { useAccountStore } from "@/stores/account";
+// เพื่อ
+import { useCartStore } from "@/stores/user/cart";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -106,6 +108,10 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const accountStore = useAccountStore();
   await accountStore.checkAuth();
+
+  const cartStore = useCartStore();
+  await cartStore.loadCart();
+  
   //ถ้าเราไม่ใช่ admin แล้วพยายามเข้า เราจะโดนดึงมาที่หน้า Home เป็นการทำ Guard ใน Navigation
   if (to.name.includes("admin") && !accountStore.isAdmin) {
     next({ name: "home" });
