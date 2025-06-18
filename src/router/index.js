@@ -20,7 +20,7 @@ import AdminOrderList from "@/views/user/admin/order/ListView.vue";
 import AdminOrderDetail from "@/views/user/admin/order/DetailView.vue";
 
 import { useAccountStore } from "@/stores/account";
-// เพื่อ
+// เพื่อ add เข้าไปใน beforeEach 
 import { useCartStore } from "@/stores/user/cart";
 
 const router = createRouter({
@@ -104,14 +104,14 @@ const router = createRouter({
     },
   ],
 });
-//ทำการสร้าง router.beforeEach เพื่อทำการรันก่อนเว็ปทำการ render เสร็จจะทำให้ icon ของ profile render เสร็จก่อนและจะมองไม่เห็นจังหวะที่ยังไม่ login
+//ทำการสร้าง router.beforeEach เพื่อทำการรันก่อนเว็ปทำการ render เสร็จ จะทำให้ icon ของ profile render เสร็จก่อนและจะมองไม่เห็นจังหวะที่ยังไม่ login
 router.beforeEach(async (to, from, next) => {
   const accountStore = useAccountStore();
   await accountStore.checkAuth();
 
   const cartStore = useCartStore();
   await cartStore.loadCart();
-  
+
   //ถ้าเราไม่ใช่ admin แล้วพยายามเข้า เราจะโดนดึงมาที่หน้า Home เป็นการทำ Guard ใน Navigation
   if (to.name.includes("admin") && !accountStore.isAdmin) {
     next({ name: "home" });
