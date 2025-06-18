@@ -10,7 +10,7 @@ const cartStore = useCartStore(); // add เข้ามาเพื่อทำ
 const eventStore = useEventStore();
 
 onMounted(() => {
-  cartStore.loadCart(); // App.vue จะถูก render ออกมาก่อนทุกหน้าถูก set เป็น default
+  // เอาออกหลังจากทำการเชื่อมกับ realtimeDB cartStore.loadCart(); // App.vue จะถูก render ออกมาก่อนทุกหน้าถูก set เป็น default
   productStore.loadProduct(); // ทำการดึงข้อมูลจาก localStorage มาแสดงที่หน้าบ้าน
 
 });
