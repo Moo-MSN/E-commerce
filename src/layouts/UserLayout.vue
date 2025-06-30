@@ -4,22 +4,25 @@ import { RouterLink, useRouter } from "vue-router";
 
 import { useCartStore } from "@/stores/user/cart";
 import { useAccountStore } from "@/stores/account";
+import { useEventStore } from "@/stores/event"; // เพื่อใช้ในการดึง banner มาแสดง
 
 const router = useRouter();
 const cartStore = useCartStore();
 const accountStore = useAccountStore();
+const eventStore = useEventStore();
 
 const searchText = ref("");
 
-onMounted(async()=>{
-  await accountStore.checkAuth()
-})
+onMounted(() => {
+  eventStore.loadBanner();
+});
 
 const login = async () => {
-  try { // จะจัดการๆ login ที่ accountStore ที่เรา import useAcoountStore
+  try {
+    // จะจัดการๆ login ที่ accountStore ที่เรา import useAcoountStore
     await accountStore.signInWithGoogle();
     // ทำการ reload หน้าเว็ปใหม่เมื่อมีการ login ใหม่อีกครั้ง
-    location.reload()
+    location.reload();
   } catch (error) {
     console.log("error", error);
   }
@@ -92,7 +95,10 @@ const handleSearch = (event) => {
           <div v-else class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
               <div class="w-10 rounded-full">
-                <img alt="Tailwind CSS Navbar component" :src= "accountStore.profile.imageUrl|| 'https://yt3.ggpht.com/yti/ANjgQV9MjMEuBPoRXYoFnBnIhoYrL0zDlRzEhaXgl1rWerr3p-Y=s108-c-k-c0x00ffffff-no-rj'"/>
+                <img
+                  alt="Tailwind CSS Navbar component"
+                  :src="accountStore.profile.imageUrl || 'https://yt3.ggpht.com/yti/ANjgQV9MjMEuBPoRXYoFnBnIhoYrL0zDlRzEhaXgl1rWerr3p-Y=s108-c-k-c0x00ffffff-no-rj'"
+                />
               </div>
             </div>
             <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
@@ -109,6 +115,14 @@ const handleSearch = (event) => {
       </div>
     </div>
   </div>
+
+  <!-- ทำการเพิ่ม banner เพื่อใช้ในการทำ event ต่างๆ เช่น flash sale  -->
+  <div v-if="eventStore.banner.display">
+    <a :href="eventStore.banner.link" target="_blank">
+      <img class="w-full" :src="eventStore.banner.imageUrl" >
+    </a>
+  </div>
+
   <!-- Main contents -->
   <slot> </slot>
 
