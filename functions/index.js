@@ -87,7 +87,7 @@ app.post("/placeorder", async (req, res) => {
       //checkoutProducts, // จะได้ค่าที่อยู่ใน checkoutProduct ด้านบนไปแสดงไป postman
       //summaryPrice, // จะแสดงแค่ค่า totalPrice ใน postman ตอนเรายิง app.post
       //orderData
-      redirectUrl:`localhost:5173/sucuess?orderId=${successOrderId}`, // ส่งค่า redirectUrl กลับไปยัง frontend เพื่อให้ redirect ไปยังหน้าสำเร็จ
+      redirectUrl:`hppts://localhost:5173/sucuess?orderId=${successOrderId}`, // ส่งค่า redirectUrl กลับไปยัง frontend เพื่อให้ redirect ไปยังหน้าสำเร็จ
     });
   } catch (error) {
     console.log("error", error);
