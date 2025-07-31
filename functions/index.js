@@ -68,7 +68,7 @@ app.post("/placeorder", async (req, res) => {
         // การเขียน order ลงใน collection orders
         orderData = {
           ...checkoutData, // ใช้ข้อมูลที่อยู่ใน checkoutData
-          chargeId: `charge_${orderId}`, // สร้าง chargeId โดยใช้ orderId เอาไว้ตอนรวมกับ omise
+          chargeId: `charge ${orderId}`, // สร้าง chargeId โดยใช้ orderId เอาไว้ตอนรวมกับ omise
           products: checkoutProducts, // ใช้ข้อมูลที่อยู่ใน checkoutProducts
           totalPrice: summaryPrice, // ใช้ข้อมูลที่อยู่ใน summaryPrice
           PaymentMethod:"rabbit_linepay", // กำหนดวิธีการชำระเงิน
@@ -87,7 +87,7 @@ app.post("/placeorder", async (req, res) => {
       //checkoutProducts, // จะได้ค่าที่อยู่ใน checkoutProduct ด้านบนไปแสดงไป postman
       //summaryPrice, // จะแสดงแค่ค่า totalPrice ใน postman ตอนเรายิง app.post
       //orderData
-      redirectUrl:`hppts://localhost:5173/sucuess?orderId=${successOrderId}`, // ส่งค่า redirectUrl กลับไปยัง frontend เพื่อให้ redirect ไปยังหน้าสำเร็จ
+      redirectUrl:`http://localhost:5173/success?order_id=${successOrderId}`, // ส่งค่า redirectUrl กลับไปยัง frontend เพื่อให้ redirect ไปยังหน้าสำเร็จ
     });
   } catch (error) {
     console.log("error", error);
