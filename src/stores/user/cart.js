@@ -1,7 +1,10 @@
 import { defineStore } from "pinia";
 // import realtimeDB เพื่อในเรียกหน้าตะกร้า
 import { db, realtimeDB } from "@/firebase";
-import { doc, updateDoc, increment, writeBatch } from "firebase/firestore";
+// import { doc, updateDoc, increment, writeBatch } from "firebase/firestore"; // ไม่ได้ใช้ firestore แต่ใช้ axios ในการดึงข้อมูล
+
+import axios from "axios";
+
 // import "firebase/database" เพื่อใช้ในการสร้างหรือดึงข้อมูลตะกร้าออกมาเวลาที่ user logged in
 import { ref, onValue, set } from "firebase/database";
 
@@ -96,33 +99,47 @@ export const useCartStore = defineStore("cart", {
     },
     async placeorder(userData) {
       try {
-        const orderData = {
+        const checkoutData = {
           ...userData, // เป็นการต่อข้อมูลใน object โดยการเพิ่มข้อมูลด้านล่าง
-          totalPrice: this.summaryPrice,
-          paymentMethod: "Credit Card",
-          createdData: new Date().toLocaleString(),
-          orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
-          products: this.items,
+
+          products: this.items.map(product => ({
+            productId: product.productId, // ใช้ id แทน name เพื่อให้เป็นการอ้างอิงที่ไม่ซ้ำกัน
+            quantity: product.quantity,
+            //totalPrice: this.summaryPrice,
+            //paymentMethod: "Credit Card",
+            //createdData: new Date().toLocaleString(),
+            //orderNumber: `AA${Math.floor(Math.random() * 90000 + 10000)}`,
+          })),
         };
-        console.log(orderData.products);
+        //console.log("orderData", checkoutData);
+
+        // ทำการยิง axios ไปยัง API เพื่อบันทึกข้อมูลการสั่งซื้อ
+        const response = await axios.post("/api/placeorder", {
+          source: "test_src", // จะเปลี่ยนจาก test_src เป็น source ที่แท้จริงในการเชื่อมต่อกับ omise
+          checkout: checkoutData // ประกอบ checkout จาก checkoutData ที่เราสร้างขึ้นด้านบน
+        });
+        console.log("response", response.data);
+        return response.data; // ส่งข้อมูลกลับไปยัง component ที่เรียกใช้ action นี้ คือ payment ที่อยู่ ใน CheckoutView.vue
+
         // สร้าง batch เพื่อเรียกใช้ writeBatch
-        const batch = writeBatch(db);
+        //const batch = writeBatch(db);
         // ทำการ loop product ทุกตัวภายใน Array ของ orderData.product
-        for (const product of orderData.products) {
-          // สร้าง productRef เพื่อเลือกไป (db, "products", product.productId)
-          const productRef = doc(db, "products", product.productId);
-          // แล้วทำการ updateDoc ไปที่ productRef แล้วเลือก field ที่ต้องการอัพเดตคือ remainQuantity โดยใช้ increment(-1) เพื่อทำการลดจำนวนที่ละ 1
-          // เปลี่ยนจาก updateDoc เป็น batch.update เพราะ
-          batch.update(productRef, {
-            remainQuantity: increment(-1),
-          });
-        }
-        await batch.commit();
-        localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
+        //for (const product of orderData.products) {
+        // สร้าง productRef เพื่อเลือกไป (db, "products", product.productId)
+        //const productRef = doc(db, "products", product.productId);
+        // แล้วทำการ updateDoc ไปที่ productRef แล้วเลือก field ที่ต้องการอัพเดตคือ remainQuantity โดยใช้ increment(-1) เพื่อทำการลดจำนวนที่ละ 1
+        // เปลี่ยนจาก updateDoc เป็น batch.update เพราะ
+        //batch.update(productRef, {
+        //remainQuantity: increment(-1),
+        //});
+        //}
+        //await batch.commit();
+        //localStorage.setItem("order-data", JSON.stringify(orderData)); // เป็น set ข้อมูลลงไปใน localstorage
       } catch (error) {
         console.log("error", error);
       }
     },
+
     loadCheckout() {
       // เป็นการสร้างขึ้นมาเพิ่อรับ order-data จาก localstorage ถ้ามีข้อมูลให้แสดง order แต่ถ้าไม่มีให้ไปยังหน้าอื่น
       const orderData = localStorage.getItem("order-data");
