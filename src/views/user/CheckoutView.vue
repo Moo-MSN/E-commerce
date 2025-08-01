@@ -35,8 +35,9 @@ const userFormData = reactive({
   note: "",
 });
 
-const payment = () => {
-  cartStore.placeorder(userFormData);
+const payment = async() => {
+  const responseData = await cartStore.placeorder(userFormData); // เราจะได้ responseData กลับมา ซึ่งจะมีข้อมูลที่เราต้องการ เช่น redirectUrl
+  location.href = responseData.redirectUrl; // ใช้ location.href เพื่อเปลี่ยนหน้าไปยัง URL ที่ได้รับจาก responseData
   //router.push({ name: "success" });
 };
 </script>
@@ -61,7 +62,7 @@ const payment = () => {
       <section class="flex-auto w-32 bg-slate-200 px-2">
         <div v-for="item in cartStore.items" class="flex bg-white m-4 py-4">
           <div class="flex-1">
-            <img class="w-full p-8" :src="item.imageURL" />
+            <img class="w-xs p-8" :src="item.imageUrl" />
           </div>
           <div class="flex-1">
             <div class="flex flex-col justify-between h-full">
