@@ -31,7 +31,7 @@ onMounted(async () => {
   <UserLayout>
     <div class="max-w-2xl mx-auto border border-base-200 shadow-xl p-8 my-4">
       <div>
-        <div class="text-xl font-bold">Your order is succressful!</div>
+        <div class="text-xl font-bold">Your order is successful!</div>
         <div>Hi : {{ orderData.name }}</div>
         <div>เตรียมรอรับสินค้าได้เลย</div>
       </div>
@@ -39,7 +39,7 @@ onMounted(async () => {
       <div class="grid grid-cols-4 gap-2">
         <div>
           <div class="font-bold">Order date</div>
-          <div>{{ orderData.createdAt }}</div>
+          <div>{{ orderData.createdAt }}</div>s
         </div>
         <div>
           <div class="font-bold">Order number</div>
