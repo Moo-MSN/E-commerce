@@ -42,6 +42,8 @@ app.post("/placeorder", async (req, res) => {
         //console.log("productDarta", productData);
 
         let checkoutProduct = product; // ทำการประกาศรับค่า checkoutProduct โดนการใช้ใช้ข้อมูลในการ loop products
+        checkoutProduct.name = productData.name; // นำชื่อสินค้าที่ได้จาก productData มาใส่ใน checkoutProduct
+        checkoutProduct.imageUrl = productData.imageUrl; // นำรูปสินค้าที่ได้จาก product
         checkoutProduct.price = productData.price;
         checkoutProduct.totalPrice = productData.price * product.quantity;
         summaryPrice += productData.price * product.quantity; // เมื่อเราทำการสั่งสินค้ามากกว่า 1 ชนิด ก็สามารถได้ราคารวมทั้งหมดได้
@@ -71,11 +73,10 @@ app.post("/placeorder", async (req, res) => {
           chargeId: `charge ${orderId}`, // สร้าง chargeId โดยใช้ orderId เอาไว้ตอนรวมกับ omise
           products: checkoutProducts, // ใช้ข้อมูลที่อยู่ใน checkoutProducts
           totalPrice: summaryPrice, // ใช้ข้อมูลที่อยู่ใน summaryPrice
-          PaymentMethod:"rabbit_linepay", // กำหนดวิธีการชำระเงิน
-          createdAt: new Date().toISOString(), // กำหนดวันที่และเวลาในการสร้าง order
+          paymentMethod:"rabbit_linepay", // กำหนดวิธีการชำระเงิน
+          createdAt: new Date().getDate(), // กำหนดวันที่และเวลาในการสร้าง order
           status: "successful", // กำหนดสถานะเริ่มต้นของ order เมื่อเราใช้ฝั่ง frontend แต่สถานะของการชำระเงินจะมีหลักๆ คือ successful, pending, failed
         };
-
         // การสร้าง order ใน firestore
         t.set(orderRef.doc(orderId), orderData); // ทำการ set ข้อมูล แล้วใส่ข้อมูลที่อยู่ใน orderData ลงไปใน collection orders
         successOrderId = orderId; // นำ orderId ที่สร้างขึ้นมาใส่ใน successOrderId เพื่อทำการ redirect ไปยังหน้าสั่งซื้อสำเร็จฝั่ง frontend
