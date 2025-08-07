@@ -15,7 +15,8 @@
   "dependencies": {
     "express": "^5.1.0",
     "firebase-admin": "^12.6.0",
-    "firebase-functions": "^6.4.0"
+    "firebase-functions": "^6.4.0",
+    "omise": "^1.0.0"
   },
   "devDependencies": {
     "firebase-functions-test": "^3.1.0"
