@@ -12,6 +12,9 @@ import { ref, onValue, set } from "firebase/database";
 // import useAccountstore เพื่อ ทำการเช็คว่ามีการ login เข้ามาก่อนหรือไม่
 import { useAccountStore } from "../account";
 
+// ตั้งค่า public key ของ Omise
+Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY); // ไม่ต้อง import Omise.js เพราะเราได้ทำการ import ใน index.html แล้ว
+
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [],
