@@ -17,6 +17,15 @@ const app = express(); // เพื่อเรียกใช้ app.GET,POST �
 const logger = require("firebase-functions/logger");
 const { get } = require("firebase/database");
 
+// เพิ่ม Omise เข้ามาเพื่อใช้ในการชำระเงิน
+const Omise = require("omise")({
+  secretKey: process.env.OMISE_SECRET_KEY, // ใช้ secret key ที่เก็บไว้ใน .env.local
+  omiseVersion: "2019-05-29", // กำหนดเวอร์ชั่นของ Omise ที่จะใช้  
+
+}); // เพิ่ม Omise เข้ามาเพื่อใช้ในการชำระเงิน
+// แสดงค่า secret key ที่เก็บไว้ใน .env.local เพื่อเช็คว่าได้ค่ามาหรือไม่ แต่ใน terminal ไม่แสดงค่า เลยใช้ app.get("/testenv"... เพื่อยิง api เพื่อดู secret key ว่าออกมาหรือไม่ 
+//console.log(process.OMIE_SESCRET_KEY); 
+
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
 app.post("/placeorder", async (req, res) => {
@@ -98,6 +107,12 @@ app.post("/placeorder", async (req, res) => {
     });
   }
 });
+// เป็นการทดสอบว่า api ทำงาน แล้วได้ Sesret key กลับมาหรือไม่ ซึ่งไม่ควรทำใน production
+//app.get("/teseenv", (req, res) => {
+//  res.json({
+//    key: process.env.OMISE_SECRET_KEY, // ส่งค่า public key กลับไปยัง frontend เพื่อใช้ในการชำระเงิน
+//  });
+//});
 exports.api = onRequest(app);
 //exports.helloWorld = onRequest((request, response) => {
 //    initializeApp({
