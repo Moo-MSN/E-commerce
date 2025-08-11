@@ -18,13 +18,35 @@ const logger = require("firebase-functions/logger");
 const { get } = require("firebase/database");
 
 // เพิ่ม Omise เข้ามาเพื่อใช้ในการชำระเงิน
-const Omise = require("omise")({
+const omise = require("omise")({
   secretKey: process.env.OMISE_SECRET_KEY, // ใช้ secret key ที่เก็บไว้ใน .env.local
-  omiseVersion: "2019-05-29", // กำหนดเวอร์ชั่นของ Omise ที่จะใช้  
-
+  omiseVersion: "2019-05-29", // กำหนดเวอร์ชั่นของ Omise ที่จะใช้
 }); // เพิ่ม Omise เข้ามาเพื่อใช้ในการชำระเงิน
-// แสดงค่า secret key ที่เก็บไว้ใน .env.local เพื่อเช็คว่าได้ค่ามาหรือไม่ แต่ใน terminal ไม่แสดงค่า เลยใช้ app.get("/testenv"... เพื่อยิง api เพื่อดู secret key ว่าออกมาหรือไม่ 
-//console.log(process.OMIE_SESCRET_KEY); 
+// แสดงค่า secret key ที่เก็บไว้ใน .env.local เพื่อเช็คว่าได้ค่ามาหรือไม่ แต่ใน terminal ไม่แสดงค่า เลยใช้ app.get("/testenv"... เพื่อยิง api เพื่อดู secret key ว่าออกมาหรือไม่
+//console.log(process.OMIE_SESCRET_KEY);
+
+// สร้างฟังก์ชัน createCharge เพื่อรับ source id แล้วส่ง secret key ไปยัง Omise เพื่อสร้างการชำระเงิน
+const createCharge = (source, amount, orderId) => {
+  return new Promise((resolve, reject) => {
+    omise.charges.create(
+      {
+        amount: amount * 100,
+        currency: "THB",
+        return_uri: `http://localhost:5173/success?order_id=${orderId}`,
+        metadata: {
+          orderId,
+        },
+        source, // source ตัวนี้มาจากการสร้าง source token ที่ได้จาก Omise ในฝั่ง frontend
+      },
+      (err, resp) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(resp);
+      }
+    );
+  });
+};
 
 // Create and deploy your first functions
 // https://firebase.google.com/docs/functions/get-started
@@ -32,10 +54,11 @@ app.post("/placeorder", async (req, res) => {
   console.log(req.body); // ตัวนี้จะไปแสดงที่ terminal
   try {
     const checkoutData = req.body.checkout; // รับ body แล้วเลือกข้อมูลใน checkout มาใส่ใน checkoutData
-
+    const sourceOmise = req.body.source; // รับ body แล้วเลือกข้อมูลใน source มาใส่ใน sourceOmise
     let checkoutProducts = [];
     let summaryPrice = 0;
     let orderData = {}; // ประกาศตัวแปร orderData เพื่อใช้ในการเก็บข้อมูลที่ได้จาก checkoutData
+    let omiseRespone = {}; // ประกาศตัวแปร omiseRespone เพื่อใช้ในการเก็บข้อมูลที่ได้จาก Omise
     let successOrderId = ""; // ประกาศตัวแปร successOrderId เพื่อใช้ในการเก็บข้อมูล orderId ที่ได้จากการสั่งซื้อ
 
     const products = checkoutData.products; //  รับข้อมูลจาก checkoutData แล้วเลือก products ที่มีใน [] มาใส่ใน products
@@ -72,24 +95,30 @@ app.post("/placeorder", async (req, res) => {
         // การสร้าง order ใน firestore
         const orderRef = db.collection("orders"); // สร้าง collection ที่ชื่อ orders
         const orderId = orderRef.doc().id; // สร้าง id ของ order ใหม่
-        orderData.orderId = orderId; // นำ orderId ที่สร้างขึ้นมาใส่ใน orderData
-        orderData.userId = checkoutData.userId; // ใส่ userId ที่มาจาก checkoutData
-        orderData.status = "success"; // กำหนดสถานะเริ่มต้นของ
+
+
+        //
+        omiseRespone = await createCharge(sourceOmise, summaryPrice, orderId); // ทำการสร้าง charge โดยใช้ sourceOmise ที่ได้จาก frontend และ summaryPrice ที่ได้จากการคำนวณราคาสินค้า
+        console.log("omiseRespone", omiseRespone); // ทำการ log omiseRespone เพื่อดูข้อมูลที่ได้จาก Omise
+        //orderData.orderId = orderId; // นำ orderId ที่สร้างขึ้นมาใส่ใน orderData
+        //orderData.userId = checkoutData.userId; // ใส่ userId ที่มาจาก checkoutData
+        //orderData.status = "successful"; // กำหนดสถานะเริ่มต้นของ
 
         // การเขียน order ลงใน collection orders
         orderData = {
           ...checkoutData, // ใช้ข้อมูลที่อยู่ใน checkoutData
-          chargeId: `charge ${orderId}`, // สร้าง chargeId โดยใช้ orderId เอาไว้ตอนรวมกับ omise
+          chargeId: omiseRespone.id, // สร้าง chargeId โดยใช้ orderId เอาไว้ตอนรวมกับ omise ตอนน้ีทำการรวมกับ omise แล้วได้ chargeId เรียบร้อย  
           products: checkoutProducts, // ใช้ข้อมูลที่อยู่ใน checkoutProducts
           totalPrice: summaryPrice, // ใช้ข้อมูลที่อยู่ใน summaryPrice
-          paymentMethod:"rabbit_linepay", // กำหนดวิธีการชำระเงิน
-          createdAt: new Date().getDate(), // กำหนดวันที่และเวลาในการสร้าง order
-          status: "successful", // กำหนดสถานะเริ่มต้นของ order เมื่อเราใช้ฝั่ง frontend แต่สถานะของการชำระเงินจะมีหลักๆ คือ successful, pending, failed
+          paymentMethod: "rabbit_linepay", // กำหนดวิธีการชำระเงิน
+          createdAt: new Date().toLocaleString(), // กำหนดวันที่และเวลาในการสร้าง order
+          status: "pending", // กำหนดสถานะเริ่มต้นของ order เมื่อเราใช้ฝั่ง frontend แต่สถานะของการชำระเงินจะมีหลักๆ คือ successful, pending, failed
         };
         // การสร้าง order ใน firestore
         t.set(orderRef.doc(orderId), orderData); // ทำการ set ข้อมูล แล้วใส่ข้อมูลที่อยู่ใน orderData ลงไปใน collection orders
-        successOrderId = orderId; // นำ orderId ที่สร้างขึ้นมาใส่ใน successOrderId เพื่อทำการ redirect ไปยังหน้าสั่งซื้อสำเร็จฝั่ง frontend
 
+
+        successOrderId = orderId; // นำ orderId ที่สร้างขึ้นมาใส่ใน successOrderId เพื่อทำการ redirect ไปยังหน้าสั่งซื้อสำเร็จฝั่ง frontend
       }
     });
     res.json({
@@ -97,7 +126,7 @@ app.post("/placeorder", async (req, res) => {
       //checkoutProducts, // จะได้ค่าที่อยู่ใน checkoutProduct ด้านบนไปแสดงไป postman
       //summaryPrice, // จะแสดงแค่ค่า totalPrice ใน postman ตอนเรายิง app.post
       //orderData
-      redirectUrl:`http://localhost:5173/success?order_id=${successOrderId}`, // ส่งค่า redirectUrl กลับไปยัง frontend เพื่อให้ redirect ไปยังหน้าสำเร็จ
+      redirectUrl: omiseRespone.authorize_uri, // ส่งค่า redirectUrl กลับไปยัง frontend เพื่อให้ redirect ไปยังหน้าสำเร็จ
     });
   } catch (error) {
     console.log("error", error);
