@@ -39,7 +39,7 @@ onMounted(async () => {
       <div class="grid grid-cols-4 gap-2">
         <div>
           <div class="font-bold">Order date</div>
-          <div>{{ orderData.createdAt }}</div>s
+          <div>{{ orderData.createdAt }}</div>
         </div>
         <div>
           <div class="font-bold">Order number</div>
