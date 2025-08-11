@@ -15,6 +15,22 @@ import { useAccountStore } from "../account";
 // ตั้งค่า public key ของ Omise
 Omise.setPublicKey(import.meta.env.VITE_OMISE_PUBLIC_KEY); // ไม่ต้อง import Omise.js เพราะเราได้ทำการ import ใน index.html แล้ว
 
+// เพิ่ม function createSource เพื่อรับการสร้าง source token สำหรับการชำระเงิน
+const createSource = (amount) => {
+  return new Promise((resolve, reject) => {
+    // ทำการส่ง source ที่ต้องการจ่ายไป omise เพื่อนำ source token กลับมา
+    Omise.createSource('rabbit_linepay', {
+      amount: (amount * 100),
+      currency: 'THB'
+    }, (statusCode, response) => {
+      if (statusCode !== 200) {
+        return reject(response)
+      }
+      resolve(response)
+    })
+  })
+}
+
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [],
@@ -109,6 +125,7 @@ export const useCartStore = defineStore("cart", {
           products: this.items.map((product) => ({
             productId: product.productId, // ใช้ id แทน name เพื่อให้เป็นการอ้างอิงที่ไม่ซ้ำกัน
             quantity: product.quantity,
+            // **Mock data ตอนทำที่ localstorage**
             //totalPrice: this.summaryPrice,
             //paymentMethod: "Credit Card",
             //createdData: new Date().toLocaleString(),
@@ -116,10 +133,17 @@ export const useCartStore = defineStore("cart", {
           })),
         };
         //console.log("orderData", checkoutData);
+        
+        // ทำการสร้าง source token โดยใช้ summaryPrice ที่ได้จาก getter summaryPrice
+        const omiseRespone = await createSource(this.summaryPrice); 
+        // ทำการ log omiseRespone เพื่อดูข้อมูลที่ได้จาก Omise
+        console.log("omiseRespone", omiseRespone);
+
+        //throw new Error("Mock payment success"); // ใช้เพื่อจำลองการชำระเงินสำเร็จ
 
         // ทำการยิง axios ไปยัง API เพื่อบันทึกข้อมูลการสั่งซื้อ
         const response = await axios.post("/api/placeorder", {
-          source: "test_src", // จะเปลี่ยนจาก test_src เป็น source ที่แท้จริงในการเชื่อมต่อกับ omise
+          source: omiseRespone.id, // จะเปลี่ยนจาก test_src เป็น omise source token ที่แท้จริงในการเชื่อมต่อกับ omise
           checkout: checkoutData, // ประกอบ checkout จาก checkoutData ที่เราสร้างขึ้นด้านบน
         });
         console.log("response", response.data);
@@ -150,7 +174,7 @@ export const useCartStore = defineStore("cart", {
       const orderRef = doc(db,"orders",orderId); // ดึงข้อมูลจาก firestore โดยใช้ orderId
       const orderSnapshot = await getDoc(orderRef); // ทำการดึงข้อมูลจาก firestore
       let orderData = orderSnapshot.data(); // ดึงข้อมูลออกมาเป็น object
-      orderData.createdAt = orderData.createdAt.toDate()// แปลง createdAt จาก timestamp เป็น string
+      orderData.createdAt, //= orderData.createdAt.toDate()// แปลง createdAt จาก timestamp เป็น string
       orderData.orderNumber = orderSnapshot.id; // ดึง id ของ order ออกมาเป็น orderNumber
       return orderData; // ส่งข้อมูลกลับไปยัง component ที่เรียกใช้ action นี้ คือ CheckoutView.vue
       } catch (error) {
