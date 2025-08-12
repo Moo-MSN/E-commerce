@@ -19,7 +19,9 @@ onMounted(async () => {
     try {
       orderData.value = await cartStore.loadCheckout(orderId); // เรียกใช้ loadCheckout จาก cartStore
     } catch (error) {
-      console.error("Error loading checkout:", error);
+      alert("your order unsuccessful!") // แจ้งเมื่อ order ไม่สำเร็จ
+      location.href = "/"; // เปลี่ยนเส้นทางไปยังหน้าแรก
+      //console.error("Error loading checkout:", error);
     }
   //if (cartStore.checkout.orderNumber) {
   //  orderData.value = cartStore.checkout;
