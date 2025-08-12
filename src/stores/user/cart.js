@@ -178,7 +178,8 @@ export const useCartStore = defineStore("cart", {
       orderData.orderNumber = orderSnapshot.id; // ดึง id ของ order ออกมาเป็น orderNumber
       return orderData; // ส่งข้อมูลกลับไปยัง component ที่เรียกใช้ action นี้ คือ CheckoutView.vue
       } catch (error) {
-        console.log("error", error);
+        throw new Error(error.message); // ถ้ามี error ให้ throw error ออกไป
+        // console.log("error", error);
       }
       // เป็นการสร้างขึ้นมาเพิ่อรับ order-data จาก localstorage ถ้ามีข้อมูลให้แสดง order แต่ถ้าไม่มีให้ไปยังหน้าอื่น
       //const orderData = localStorage.getItem("order-data");
