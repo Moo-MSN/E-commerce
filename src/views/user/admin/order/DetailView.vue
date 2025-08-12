@@ -12,10 +12,10 @@ const orderData = ref({
   product: [], // ไม่ได้ใช้เป็น reactive เนื่องจากต้อวการแค่แสดงผลออกมาก
 });
 
-onMounted(() => {
+onMounted(async() => {
   if (route.params.id) {
-    orderIndex.value = parseInt(route.params.id);
-    const selectedOrder = adminOrderStore.getOrder(orderIndex.value);
+    orderIndex.value = route.params.id;
+    const selectedOrder = await adminOrderStore.getOrder(orderIndex.value);
     orderData.value = selectedOrder;
   }
 });
@@ -34,7 +34,7 @@ onMounted(() => {
 
         <div>
           <div class="font-bold">Order Number</div>
-          <div>{{ orderData.no }}</div>
+          <div>{{ orderData.orderId }}</div>
         </div>
 
         <div>
@@ -48,29 +48,29 @@ onMounted(() => {
         </div>
       </div>
       <div class="divider"></div>
-      <div v-for="product in orderData.products" class="grid grid-cols-4 items-center"> <!-- ใช้ v-for เพื่อทำการ loop products ใน order.js-->
-        <div class="mx-auto"> <!-- ทำการเลื่อนภาพให้อยู่ตรงกลาง -->
-          <img class="p-4 w-30" :src="product.imageUrl" >
+      <div v-for="product in orderData.products" class="grid grid-cols-4 items-center">
+        <!-- ใช้ v-for เพื่อทำการ loop products ใน order.js-->
+        <div class="mx-auto">
+          <!-- ทำการเลื่อนภาพให้อยู่ตรงกลาง -->
+          <img class="p-4 w-30" :src="product.imageUrl" />
         </div>
 
         <div>
-          <div class="font-bold ">{{ product.name }} </div>
+          <div class="font-bold">{{ product.name }}</div>
           <div>{{ product.description }}</div>
         </div>
 
-        <div>
-          จำนวน {{ product.quantity }} ชิ้น
-        </div>
+        <div>จำนวน {{ product.quantity }} ชิ้น</div>
         <div>{{ product.price }} B</div>
       </div>
       <div class="divider"></div>
-        <div class="flex justify-between font-bold">
-          <div>Total Price</div>
-          <div>{{ orderData.totalPrice }}</div>
-        </div>
-        <div class="flex justify-end mt-4">
-          <RouterLink :to="{ name:'admin-orders-list' }" class="btn btn-ghost">BACK</RouterLink>
-        </div>
+      <div class="flex justify-between font-bold">
+        <div>Total Price</div>
+        <div>{{ orderData.totalPrice }}</div>
+      </div>
+      <div class="flex justify-end mt-4">
+        <RouterLink :to="{ name: 'admin-orders-list' }" class="btn btn-ghost">BACK</RouterLink>
+      </div>
     </div>
   </AdminLayout>
 </template>
