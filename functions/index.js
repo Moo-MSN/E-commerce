@@ -96,7 +96,6 @@ app.post("/placeorder", async (req, res) => {
         const orderRef = db.collection("orders"); // สร้าง collection ที่ชื่อ orders
         const orderId = orderRef.doc().id; // สร้าง id ของ order ใหม่
 
-
         //
         omiseRespone = await createCharge(sourceOmise, summaryPrice, orderId); // ทำการสร้าง charge โดยใช้ sourceOmise ที่ได้จาก frontend และ summaryPrice ที่ได้จากการคำนวณราคาสินค้า
         console.log("omiseRespone", omiseRespone); // ทำการ log omiseRespone เพื่อดูข้อมูลที่ได้จาก Omise
@@ -107,7 +106,7 @@ app.post("/placeorder", async (req, res) => {
         // การเขียน order ลงใน collection orders
         orderData = {
           ...checkoutData, // ใช้ข้อมูลที่อยู่ใน checkoutData
-          chargeId: omiseRespone.id, // สร้าง chargeId โดยใช้ orderId เอาไว้ตอนรวมกับ omise ตอนน้ีทำการรวมกับ omise แล้วได้ chargeId เรียบร้อย  
+          chargeId: omiseRespone.id, // สร้าง chargeId โดยใช้ orderId เอาไว้ตอนรวมกับ omise ตอนน้ีทำการรวมกับ omise แล้วได้ chargeId เรียบร้อย
           products: checkoutProducts, // ใช้ข้อมูลที่อยู่ใน checkoutProducts
           totalPrice: summaryPrice, // ใช้ข้อมูลที่อยู่ใน summaryPrice
           paymentMethod: "rabbit_linepay", // กำหนดวิธีการชำระเงิน
@@ -116,7 +115,6 @@ app.post("/placeorder", async (req, res) => {
         };
         // การสร้าง order ใน firestore
         t.set(orderRef.doc(orderId), orderData); // ทำการ set ข้อมูล แล้วใส่ข้อมูลที่อยู่ใน orderData ลงไปใน collection orders
-
 
         successOrderId = orderId; // นำ orderId ที่สร้างขึ้นมาใส่ใน successOrderId เพื่อทำการ redirect ไปยังหน้าสั่งซื้อสำเร็จฝั่ง frontend
       }
@@ -142,6 +140,61 @@ app.post("/placeorder", async (req, res) => {
 //    key: process.env.OMISE_SECRET_KEY, // ส่งค่า public key กลับไปยัง frontend เพื่อใช้ในการชำระเงิน
 //  });
 //});
+
+// สร้าง api ของ webhook เพื่อส่ง สถานะการชำระเงินกลับไปยัง frontend
+app.post("/webhook", async (req, res) => {
+  try {
+    if (req.body.key === "charge.complete") {
+      const webhookData = req.body.data; // รับข้อมูลที่ส่งมาจาก Omise ผ่าน webhook
+
+      const orderId = webhookData.metadata.orderId; // ดึง orderId ออกมาจาก metadata ของ webhookData
+      const chargeId = webhookData.id; // ดึง chargeId ออกมาจาก webhookData
+      const statusOrder = webhookData.status; // ดึง status ของการชำระเงินออกมาจาก webhookData
+
+      const orderRef = db.collection("orders").doc(orderId); // สร้าง reference ไปยัง order ที่เราสร้างไว้ใน firestore
+      const orderSnapshot = await orderRef.get(); // ดึงข้อมูล order ออกมาจาก firestore
+      const orderData = orderSnapshot.data(); // นำข้อมูลที่ได้จาก orderSnapshot มาเก็บไว้ใน orderData
+
+      // กรณีที่ orderData ไม่มีข้อมูล หรือไม่พบ order ที่เราต้องการ
+      if (orderData.chargeId !== chargeId) {
+        // ถ้า chargeId ที่ได้จาก webhook ไม่ตรงกับ chargeId ที่อยู่ใน orderData
+        throw new Error("Charge not found");
+      }
+      // ถ้า chargeId ตรงกัน ก็ทำการอัพเดทสถานะของ order ใน firestore
+      if (orderData.status === "pending") {
+        // ถ้าสถานะของ order ยังเป็น pending อยู่
+        await orderRef.update({
+          status: statusOrder, // อัพเดทสถานะของ order เป็น statusOrder ที่ได้จาก webhook
+          updatedAt: new Date().toLocaleString(), // อัพเดทวันที่และเวลาในการอัพเดท order
+        });
+        //console.log("อัพเดทสถานะของ order สำเร็จ", orderId);
+      }
+      // ถ้าชำระเงินไม่สำเร็จ ก็ทำการคืน stock สินค้า
+      if (statusOrder !== "successful") {
+        // ถ้าสถานะของการชำระเงินไม่สำเร็จ
+        db.runTransaction(async (t) => {
+          for (const product of orderData.products) {
+            // loop ข้อมูลที่อยู่ใน products ของ orderData
+            const productRef = db.collection("products").doc(product.productId); // สร้าง reference ไปยัง productที่เราสั่งซื้อ
+            const productSnapshot = await productRef.get(); // ดึงข้อมูล product ออกมาจาก firestore
+            const productData = productSnapshot.data(); // นำข้อมูลที่ได้จาก productSnapshot มาเก็บไว้ใน productData
+
+            // อัพเดทจำนวนสินค้าใน firestore ให้กลับมาเป็นจำนวนเดิม
+            t.update(productRef, {
+              remainQuantity: productData.remainQuantity + product.quantity, // เพิ่มจำนวนสินค้าใน firestore กลับมาเป็นจำนวนเดิม
+            });
+          }
+        });
+        // console.log("คืน stock สินค้าเรียบร้อยแล้ว");
+      }
+    }
+  } catch (error) {
+    console.error("เกิดข้อผิดพลาดในการประมวลผล webhook:", error);
+  }
+
+  // console.log("webhook", req.body); // แสดงข้อมูลที่ได้รับจาก webhook ใน console
+});
+
 exports.api = onRequest(app);
 //exports.helloWorld = onRequest((request, response) => {
 //    initializeApp({
