@@ -1,6 +1,19 @@
 <script setup>
 import AdminLayout from "@/layouts/AdminLayout.vue";
 
+// import onmounted เพื่อใช้ lifecycle hook
+import { onMounted } from "vue";
+
+// import เพื่อใช้ useAadminDashboardStore
+import { useAdminDashboardStore } from "@/stores/admin/dashboard";
+
+const adminDashboardStore = useAdminDashboardStore(); // เพื่อเข้าถึง useAadminDashboardStore
+
+//
+onMounted (async() => {
+ await adminDashboardStore.loadDashboard();
+});
+
 const barOption = {
   options: {
     chart: {
@@ -39,7 +52,7 @@ const donutOption = {
           </svg>
         </div>
         <div class="text-lg stat-title">Order</div>
-        <div class="stat-value">31K</div>
+        <div class="stat-value">{{ adminDashboardStore.stats.order }}</div>
       </div>
 
       <div class="stat">
@@ -52,7 +65,7 @@ const donutOption = {
           </svg>
         </div>
         <div class="text-lg stat-title">Products</div>
-        <div class="stat-value">4,200</div>
+        <div class="stat-value">{{ adminDashboardStore.stats.product }}</div>
       </div>
 
       <div class="stat">
@@ -65,7 +78,7 @@ const donutOption = {
           </svg>
         </div>
         <div class="text-lg stat-title">Users</div>
-        <div class="stat-value">1,200</div>
+        <div class="stat-value">{{ adminDashboardStore.stats.user }}</div>
       </div>
     </div>
   </div>
