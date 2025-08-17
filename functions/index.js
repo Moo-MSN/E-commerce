@@ -9,13 +9,17 @@
 
 const { onRequest } = require("firebase-functions/v2/https");
 //const { initializeApp } = require("firebase-admin/app"); // เพิ่ม initailizeApp เพื่อเรียกใช้ firebase admin
-const { db, auth } = require("./firebaseConfig.js"); //เพิ่ม Config มาใช้แทน initializeApp ด้านบน
+const { db, auth, realtimeDb } = require("./firebaseConfig.js"); //เพิ่ม Config มาใช้แทน initializeApp ด้านบน
 
 const express = require("express"); // เพิ่ม express เข้ามาเพื่อใช้ในการทำ api เพราะถ้าใช้ onRequest จะสามารถใช้ได้ทั้ง GET and POST ได้ ซึ่งเราไม่อยากทำแบบนั้น อยากจะแยกเส้นไปเลย
-const app = express(); // เพื่อเรียกใช้ app.GET,POST เป็นต้น
+const app = express(); // เพื่อเรียกใช้ app.GET,POST
+
+// เพิ้ม tigger ของ firebase functions เข้ามาเพื่อใช้ในการทำ api
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 
 const logger = require("firebase-functions/logger");
 const { get } = require("firebase/database");
+const { event } = require("firebase-functions/v1/analytics");
 
 // เพิ่ม Omise เข้ามาเพื่อใช้ในการชำระเงิน
 const omise = require("omise")({
@@ -196,6 +200,25 @@ app.post("/webhook", async (req, res) => {
 });
 
 exports.api = onRequest(app);
+
+// สร้าง trigger เพื่ออัพเดทข้อมูลใน firestore เมื่อมีการเขียนข้อมูลใน collection orders
+exports.updateOrder = onDocumentWritten("orders/{orderId}", async (event) => {
+  const oldData = event.data.before.data(); // ข้อมูลก่อนการเปลี่ยนแปลง
+  const newData = event.data.after.data(); // ข้อมูลหลังการเปลี่ยนแปลง
+  console.log("Old Data:", oldData);
+  console.log("New Data:", newData);
+
+  // ประกาศ ref ไปยัง collection stats
+  const orderStatsRef = realtimeDb.ref("stats/orders");
+
+  if (
+    newData.status === "successful" && oldData.status === "pending"
+  ) {
+      await orderStatsRef.transaction((currentValue) => {
+        return currentValue + newData.totalPrice;
+      });
+  }
+});
 //exports.helloWorld = onRequest((request, response) => {
 //    initializeApp({
 // projectId: "easy-commerce-by-moo-msn"
