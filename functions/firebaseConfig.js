@@ -5,7 +5,7 @@ const {getDatabase} = require("firebase-admin/database"); // ใช้เพื�
 
 initializeApp({
   projectId: "easy-commerce-by-moo-msn",
-  databaseURL: "http://127.0.0.1:9004/?ns=easy-commerce-by-moo-msn-default-rtdb"
+  databaseURL: "http://127.0.0.1:9004/?ns=easy-commerce-by-moo-msn-default-rtdb",
 });
 
 const db = getFirestore();

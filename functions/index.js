@@ -209,7 +209,7 @@ exports.updateOrder = onDocumentWritten("orders/{orderId}", async (event) => {
   console.log("New Data:", newData);
 
   // ประกาศ ref ไปยัง collection stats
-  const orderStatsRef = realtimeDb.ref("stats/orders");
+  const orderStatsRef = realtimeDb.ref("stats/order");
 
   if (
     newData.status === "successful" && oldData.status === "pending"

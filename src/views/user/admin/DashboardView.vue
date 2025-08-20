@@ -51,7 +51,7 @@ const donutOption = {
             />
           </svg>
         </div>
-        <div class="text-lg stat-title">Order</div>
+        <div class="text-lg stat-title">Orders</div>
         <div class="stat-value">{{ adminDashboardStore.stats.order }}</div>
       </div>
 
